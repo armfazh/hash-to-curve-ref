@@ -28,7 +28,7 @@ func HashToField(
 		if _, err := io.ReadFull(rd, t); err != nil {
 			panic("error on hdkf")
 		}
-		u[i-1] = fq.P.NewElt(t)
+		u[i-1] = fq.P.EltFromBytes(t)
 	}
 	return u
 }

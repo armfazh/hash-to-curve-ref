@@ -16,7 +16,6 @@ type Prime struct {
 }
 
 var listPrimes = []Prime{
-	Prime{m: 1, k: 112, name: "p224", p: "26959946667150639794667015087019630673557916260026308143510066298881"},
 	Prime{m: 1, k: 128, name: "p25519", p: "57896044618658097711785492504343953926634992332820282019728792003956564819949"},
 	Prime{m: 1, k: 128, name: "p256", p: "115792089210356248762697446949407573530086143415290314195533631308867097853951"},
 	Prime{m: 1, k: 128, name: "p256k1", p: "115792089237316195423570985008687907853269984665640564039457584007908834671663"},
@@ -31,12 +30,11 @@ var listPrimes = []Prime{
 
 func TestHashToField(t *testing.T) {
 	for _, p := range listPrimes {
+		field := math.GF(p.p, p.m)
+		H := sha256.New
 		msg := []byte("Lorem ipsum dolor sit amet")
 		DST := []byte("QUUX-V01-CS01")
 		ctr := uint(0)
-
-		field := math.GF(p.p, p.m)
-		H := sha256.New
 		u := h2c.HashToField(H, msg, DST, ctr, p.k, field)
 		t.Logf("p: %v m: %v k : %v\n", p.name, p.m, p.k)
 		t.Logf("u: %v", u)
