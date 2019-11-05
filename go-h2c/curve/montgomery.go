@@ -2,6 +2,7 @@ package curve
 
 import (
 	"fmt"
+
 	"github.com/armfazh/hash-to-curve-ref/h2c/math"
 )
 

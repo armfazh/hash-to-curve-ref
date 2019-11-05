@@ -1,23 +1,37 @@
 package main
 
-import "fmt"
-import "github.com/armfazh/hash-to-curve-ref/h2c/math"
+import (
+	crand "crypto/rand"
+	"crypto/sha256"
+	"fmt"
+	mrand "math/rand"
+
+	"github.com/armfazh/hash-to-curve-ref/h2c/field"
+)
 
 func main() {
+	_ = crand.Reader
+	_ = mrand.New(mrand.NewSource(5))
 	fmt.Println("Test Vectors")
-	Fp := math.NEWGF("103", 1)
-	fmt.Println(Fp)
-	a, b := Fp.Elt(), Fp.Elt()
-	fmt.Println(a)
-	fmt.Println(b)
-	c := Fp.Add(a, b)
-	fmt.Println(c)
 
-	Fp2 := math.NEWGF("103", 2)
-	fmt.Println(Fp2)
-	x, y := Fp2.Elt(), Fp2.Elt()
-	fmt.Println(x)
-	fmt.Println(y)
-	z := Fp2.Add(x, y)
-	fmt.Println(z)
+	H := sha256.New
+	msg := "hello"
+	dst := "world"
+	fmt.Printf("msg: %v\n", msg)
+	fmt.Printf("dst: %v\n", dst)
+
+	F1 := field.NewGF("103", 1, "2^7-25")
+	a1 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F1)
+	fmt.Println(F1)
+	fmt.Printf("H(msg): %v\n", a1)
+
+	F2 := field.NewGF("103", 2, "2^7-25")
+	a2 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F2)
+	fmt.Println(F2)
+	fmt.Printf("H(msg): %v\n", a2)
+
+	F3 := field.NewFromID(field.P25519)
+	a3 := field.HashToField(H, []byte(msg), []byte(dst), 0, 128, F3)
+	fmt.Println(F3)
+	fmt.Printf("H(msg): %v\n", a3)
 }
