@@ -1,42 +1,37 @@
 package field
 
 import (
-	"crypto/sha256"
+	"crypto/sha512"
+	"fmt"
 	"testing"
-
-	"github.com/armfazh/hash-to-curve-ref/h2c"
-	"github.com/armfazh/hash-to-curve-ref/h2c/math"
 )
 
-type Prime struct {
-	name string
-	p    string
-	m    uint
-	k    uint
-}
-
-var listPrimes = []Prime{
-	Prime{m: 1, k: 128, name: "p25519", p: "57896044618658097711785492504343953926634992332820282019728792003956564819949"},
-	Prime{m: 1, k: 128, name: "p256", p: "115792089210356248762697446949407573530086143415290314195533631308867097853951"},
-	Prime{m: 1, k: 128, name: "p256k1", p: "115792089237316195423570985008687907853269984665640564039457584007908834671663"},
-	Prime{m: 1, k: 192, name: "p384", p: "39402006196394479212279040100143613805079739270465446667948293404245721771496870329047266088258938001861606973112319"},
-	Prime{m: 1, k: 224, name: "p448", p: "726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439"},
-	Prime{m: 1, k: 256, name: "p521", p: "6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151"},
-	Prime{m: 1, k: 256, name: "BLS12-381", p: "0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab"},
-	Prime{m: 2, k: 256, name: "BLS12-381", p: "0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab"},
-	Prime{m: 1, k: 100, name: "BN256", p: "65000549695646603732796438742359905742825358107623003571877145026864184071783"},
-	Prime{m: 2, k: 100, name: "BN256", p: "65000549695646603732796438742359905742825358107623003571877145026864184071783"},
-}
-
 func TestHashToField(t *testing.T) {
-	for _, p := range listPrimes {
-		field := math.GF(p.p, p.m)
-		H := sha256.New
-		msg := []byte("Lorem ipsum dolor sit amet")
-		DST := []byte("QUUX-V01-CS01")
-		ctr := uint(0)
-		u := h2c.HashToField(H, msg, DST, ctr, p.k, field)
-		t.Logf("p: %v m: %v k : %v\n", p.name, p.m, p.k)
-		t.Logf("u: %v", u)
+	H := sha512.New
+	msg := "hello"
+	dst := "asdf"
+	ctr := byte(0)
+	F3 := NewFromID(P448)
+
+	fmt.Printf("msg: %v\n", msg)
+	fmt.Printf("dst: %v\n", dst)
+	fmt.Printf("F: %v\n", F3)
+	a3 := HashToField([]byte(msg), []byte(dst), ctr, H, F3, 84)
+	fmt.Printf("u: %v\n", a3)
+	want := "0x9ce2583e1380f1e2bbb9a00267c504c17bd4fa5ddb1ce304a99f842163ca774bb1b934813adee2858f15b94a8eb7b7668dfa22870bcc8cbd"
+	got := fmt.Sprintf("%v", a3)
+	if want != got {
+		t.Errorf("want: %v\ngot:%v\n", want, got)
+	}
+}
+
+func BenchmarkHashToField(b *testing.B) {
+	H := sha512.New
+	msg := "hello"
+	dst := "asdf"
+	ctr := byte(0)
+	F3 := NewFromID(P448)
+	for i := 0; i < b.N; i++ {
+		_ = HashToField([]byte(msg), []byte(dst), ctr, H, F3, 84)
 	}
 }

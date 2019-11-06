@@ -10,19 +10,28 @@ import (
 
 // HashToField is a function that hashes a string msg of any length into an
 // element of a field fq.
+//
+// Parameters:
+// - msg is the message to hash.
+// - DST, a domain separation tag (see discussion above).
+// - ctr is 0, 1, or 2.
+// - H, a cryptographic hash function.
+// - F, a finite field of characteristic p and order q = p^m.
+// - L = ceil((ceil(log2(p)) + k) / 8), where k is the security parameter of
+// the cryptosystem (e.g., k = 128).
+// - HKDF as defined in RFC-5869 and instantiated with H.
 func HashToField(
-	H func() hash.Hash,
 	msg, dst []byte,
 	ctr byte,
-	k uint,
-	F Field) Elt {
+	H func() hash.Hash,
+	F Field,
+	L uint) Elt {
 
 	info := []byte{'H', '2', 'C', ctr, byte(1)}
 	msgPrime := hkdf.Extract(H, append(msg, byte(0)), dst)
 
 	m := F.Ext()
 	e := make([]*big.Int, m)
-	L := (uint(F.BitLen()) + k) / 8
 	t := make([]byte, L)
 
 	for i := uint(1); i <= m; i++ {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	mrand "math/rand"
 
-	"github.com/armfazh/hash-to-curve-ref/h2c/field"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
 func main() {
@@ -17,14 +17,14 @@ func main() {
 	H := sha256.New
 	msg := "hello"
 	dst := "world"
-	fmt.Printf("msg: %v\n", msg)
-	fmt.Printf("dst: %v\n", dst)
-
-	F1 := field.NewGF("103", 1, "2^7-25")
-	a1 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F1)
-	fmt.Println(F1)
-	fmt.Printf("H(msg): %v\n", a1)
-
+	// fmt.Printf("msg: %v\n", msg)
+	// fmt.Printf("dst: %v\n", dst)
+	//
+	// F1 := field.NewGF("103", 1, "2^7-25")
+	// a1 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F1)
+	// fmt.Println(F1)
+	// fmt.Printf("H(msg): %v\n", a1)
+	//
 	F2 := field.NewGF("103", 2, "2^7-25")
 	a2 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F2)
 	fmt.Println(F2)

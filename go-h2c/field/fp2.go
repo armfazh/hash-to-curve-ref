@@ -23,7 +23,7 @@ type fp2 struct{ prime }
 func newFp2(mod prime) Field { return fp2{mod} }
 
 func (f fp2) P() *big.Int { return f.p }
-func (f fp2) Elt() Elt    { return fp2Elt{big.NewInt(0), big.NewInt(0)} }
+func (f fp2) E() Elt      { return fp2Elt{big.NewInt(0), big.NewInt(0)} }
 func (f fp2) Rand(r io.Reader) Elt {
 	a, _ := rand.Int(r, f.p)
 	b, _ := rand.Int(r, f.p)
@@ -32,7 +32,7 @@ func (f fp2) Rand(r io.Reader) Elt {
 func (f fp2) String() string { return "GF(" + f.name + ") Irred: i^2+1" }
 func (f fp2) Ext() uint      { return uint(2) }
 func (f fp2) One() Elt       { return fp2Elt{big.NewInt(1), big.NewInt(0)} }
-func (f fp2) Zero() Elt      { return f.Elt() }
+func (f fp2) Zero() Elt      { return f.E() }
 func (f fp2) BitLen() int    { return f.p.BitLen() }
 func (f fp2) EltFromList(in []*big.Int) Elt {
 	if len(in) != 2 {

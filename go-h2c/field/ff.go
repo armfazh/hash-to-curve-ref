@@ -7,7 +7,7 @@ import (
 
 // Field is
 type Field interface {
-	Elt() Elt // Constructor of Elements
+	E() Elt // Constructor of Elements
 	EltFromList([]*big.Int) Elt
 	Rand(r io.Reader) Elt // Constructor of Elements at Random
 	Zero() Elt            // Returns the zero element
@@ -42,7 +42,7 @@ type Elt interface {
 }
 
 // NewFromID is
-func NewFromID(id Prime) Field { return newFp(getFromID(id)) }
+func NewFromID(id Prime) Field { return getFromID(id) }
 
 // NewGF is
 func NewGF(p string, m uint, name string) Field {

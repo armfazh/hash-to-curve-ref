@@ -1,4 +1,4 @@
-module github.com/armfazh/hash-to-curve-ref/h2c
+module github.com/armfazh/hash-to-curve-ref/go-h2c
 
 go 1.12
 
