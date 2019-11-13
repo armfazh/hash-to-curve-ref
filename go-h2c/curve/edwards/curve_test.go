@@ -1,10 +1,10 @@
-package montgomery_test
+package edwards_test
 
 import (
 	"testing"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/curve/montgomery"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/curve/edwards"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
@@ -13,12 +13,12 @@ func TestOne(t *testing.T) {
 
 	F0 := field.NewGF("103", 2, "p103")
 	a0, b0 := F0.Zero(), F0.Elt([]interface{}{-3, uint64(0xff)})
-	E0 := montgomery.NewCurve(F0, a0, b0, 8)
+	E0 := edwards.NewCurve(F0, a0, b0, 8)
 	t.Logf("E: %v\n", E0)
 
 	F1 := field.NewFromID(field.P25519)
 	a1, b1 := F1.Elt(-1), F1.Elt(-2)
-	E1 := montgomery.NewCurve(F1, a1, b1, 8)
+	E1 := edwards.NewCurve(F1, a1, b1, 8)
 	t.Logf("E: %v\n", E1)
 
 	P := E1.NewPoint(F1.Elt(9), F1.Elt(3))
@@ -31,7 +31,7 @@ func TestOne(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	F := field.NewGF("53", 1, "p53")
-	E := montgomery.NewCurve(F, F.Elt(4), F.Elt(3), 4)
+	E := edwards.NewCurve(F, F.Elt(4), F.Elt(3), 4)
 	G := E.NewPoint(F.Elt(16), F.Elt(4))
 	order := 44
 	T := make([]C.Point, order)

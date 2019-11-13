@@ -125,10 +125,7 @@ func (e *curve) Double(p C.Point) C.Point {
 }
 
 func (e curve) String() string {
-	return fmt.Sprintf("By^2=x^3+Ax^2+x\n"+
-		"F: %v\n"+
-		"A: %v\n"+
-		"B: %v\n", e.F, e.A, e.B)
+	return fmt.Sprintf("By^2=x^3+Ax^2+x\nF: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
 }
 
 // Point is a projective point on a Montgomery curve.
