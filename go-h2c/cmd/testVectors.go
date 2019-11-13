@@ -26,12 +26,12 @@ func main() {
 	// fmt.Printf("H(msg): %v\n", a1)
 	//
 	F2 := field.NewGF("103", 2, "2^7-25")
-	a2 := field.HashToField(H, []byte(msg), []byte(dst), 0, 3, F2)
+	a2 := field.HashToField([]byte(msg), []byte(dst), 0, H, F2, 3)
 	fmt.Println(F2)
 	fmt.Printf("H(msg): %v\n", a2)
 
 	F3 := field.NewFromID(field.P25519)
-	a3 := field.HashToField(H, []byte(msg), []byte(dst), 0, 128, F3)
+	a3 := field.HashToField([]byte(msg), []byte(dst), 0, H, F3, 3)
 	fmt.Println(F3)
 	fmt.Printf("H(msg): %v\n", a3)
 }

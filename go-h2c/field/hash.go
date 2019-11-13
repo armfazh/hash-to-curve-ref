@@ -43,5 +43,5 @@ func HashToField(
 		e[i-1] = new(big.Int).SetBytes(t)
 		e[i-1].Mod(e[i-1], F.P())
 	}
-	return F.EltFromList(e)
+	return F.Elt(e)
 }
