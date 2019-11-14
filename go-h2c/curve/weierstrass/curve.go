@@ -1,4 +1,4 @@
-package montgomery
+package weierstrass
 
 import (
 	"fmt"
@@ -13,12 +13,12 @@ type curve struct {
 	Cofactor uint
 }
 
-// NewCurve returns a Montgomery curve
+// NewCurve returns a Weierstrass curve
 func NewCurve(f GF.Field, a, b GF.Elt, h uint) C.EllCurve {
 	return &curve{F: f, A: a, B: b, Cofactor: h}
 }
 
-// NewCurve returns a point on a Montgomery curve
+// NewCurve returns a point on a Weierstrass curve
 func (e *curve) NewPoint(x, y GF.Elt) C.Point {
 	return &point{e: e, x: x, y: y, isIdentity: false}
 }
@@ -31,15 +31,13 @@ func (e *curve) IsOnCurve(p C.Point) bool {
 	P := p.(*point)
 	F := e.F
 	var t0, t1 GF.Elt
-	t0 = F.Add(P.x, e.A)    // x+A
-	t0 = F.Mul(t0, P.x)     // (x+A)x
-	t0 = F.Add(t0, F.One()) // (x+A)x+1
-	t0 = F.Mul(t0, P.x)     // ((x+A)x+1)x
-	t1 = F.Sqr(P.y)         // y^2
-	t1 = F.Mul(t1, e.B)     // By^2
+	t0 = F.Sqr(P.x)     // x^2
+	t0 = F.Add(t0, e.A) // x^2+A
+	t0 = F.Mul(t0, P.x) // (x^2+A)x
+	t0 = F.Add(t0, e.B) // (x^2+A)x+B
+	t1 = F.Sqr(P.y)     // y^2
 	return F.AreEqual(t0, t1) || P.isIdentity
 }
-
 func (e *curve) Add(p, q C.Point) C.Point {
 	if p.IsIdentity() {
 		return q.Copy()
@@ -81,10 +79,8 @@ func (e *curve) add(p, q C.Point) C.Point {
 	ll = F.Mul(t0, t1)   // l = (y2-y1)/(x2-x1)
 
 	t0 = F.Sqr(ll)       // l^2
-	t0 = F.Mul(t0, e.B)  // Bl^2
-	t0 = F.Sub(t0, e.A)  // Bl^2-A
-	t0 = F.Sub(t0, P.x)  // Bl^2-A-x1
-	R.x = F.Sub(t0, Q.x) // x' = Bl^2-A-x1-x2
+	t0 = F.Sub(t0, P.x)  // l^2-x1
+	R.x = F.Sub(t0, Q.x) // x' = l^2-x1-x2
 
 	t0 = F.Sub(P.x, R.x) // x1-x3
 	t0 = F.Mul(t0, ll)   // l(x1-x3)
@@ -102,21 +98,16 @@ func (e *curve) Double(p C.Point) C.Point {
 	F := e.F
 	R := &point{e: e, isIdentity: false}
 	var t0, t1, ll GF.Elt
-	t0 = F.Mul(F.Elt(3), P.x) // 3x
-	t1 = F.Mul(F.Elt(2), e.A) // 2A
-	t0 = F.Add(t0, t1)        // 3x+2A
-	t0 = F.Mul(t0, P.x)       // (3x+2A)x
-	t1 = F.Add(t0, F.One())   // (3x+2A)x+1
-	t0 = F.Mul(F.Elt(2), e.B) // 2B
-	t0 = F.Mul(t0, P.y)       // 2By
-	t0 = F.Inv(t0)            // 1/2By
-	ll = F.Mul(t1, t0)        // l = (3x^2+2Ax+1)/(2By)
+	t0 = F.Sqr(P.x)          // x^2
+	t0 = F.Mul(t0, F.Elt(3)) // 3x^2
+	t0 = F.Add(t0, e.A)      // 3x^2+A
+	t1 = F.Add(P.y, P.y)     // 2y
+	t1 = F.Inv(t1)           // 1/2y
+	ll = F.Mul(t0, t1)       // l = (3x^2+2A)/(2y)
 
 	t0 = F.Sqr(ll)       // l^2
-	t0 = F.Mul(t0, e.B)  // Bl^2
-	t0 = F.Sub(t0, e.A)  // Bl^2-A
-	t0 = F.Sub(t0, P.x)  // Bl^2-A-x
-	R.x = F.Sub(t0, P.x) // x' = Bl^2-A-2x
+	t0 = F.Sub(t0, P.x)  // l^2-x
+	R.x = F.Sub(t0, P.x) // x' = l^2-2x
 
 	t0 = F.Sub(P.x, R.x) // x-x'
 	t0 = F.Mul(t0, ll)   // l(x-x')
@@ -126,7 +117,7 @@ func (e *curve) Double(p C.Point) C.Point {
 }
 
 func (e curve) String() string {
-	return fmt.Sprintf("By^2=x^3+Ax^2+x\nF: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
+	return fmt.Sprintf("y^2=x^3+Ax+B\nF: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
 }
 
 // Point is a projective point on a Montgomery curve.

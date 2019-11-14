@@ -10,6 +10,11 @@ type modulus struct {
 	p    *big.Int
 }
 
+func (m modulus) fromType(in interface{}) *big.Int {
+	p := fromType(in)
+	return p.Mod(p, m.p)
+}
+
 func bigFromString(s string) *big.Int {
 	p := new(big.Int)
 	if _, ok := p.SetString(s, 0); !ok {
@@ -18,7 +23,7 @@ func bigFromString(s string) *big.Int {
 	return p
 }
 
-func (m modulus) fromType(in interface{}) *big.Int {
+func fromType(in interface{}) *big.Int {
 	n := new(big.Int)
 	switch s := in.(type) {
 	case *big.Int:
@@ -50,5 +55,5 @@ func (m modulus) fromType(in interface{}) *big.Int {
 	default:
 		panic(fmt.Errorf("type %T not supported", in))
 	}
-	return n.Mod(n, m.p)
+	return n
 }

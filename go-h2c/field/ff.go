@@ -1,6 +1,7 @@
 package field
 
 import (
+	"fmt"
 	"io"
 	"math/big"
 )
@@ -53,16 +54,16 @@ type Elt interface {
 func NewFromID(id Prime) Field { return getFromID(id) }
 
 // NewGF is
-func NewGF(p string, m uint, name string) Field {
+func NewGF(p interface{}, m uint, name string) Field {
 	if !(m == 1 || m == 2) {
 		panic("not implemented")
 	}
 	modulus := modulus{
 		name: name,
-		p:    bigFromString(p),
+		p:    fromType(p),
 	}
 	if !modulus.p.ProbablyPrime(5) {
-		panic("p=" + p + " is not prime")
+		panic(fmt.Errorf("p= %v is not prime", p))
 	}
 	switch m {
 	case 1:

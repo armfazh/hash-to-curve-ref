@@ -18,3 +18,15 @@ type EllCurve interface {
 	Add(p, q Point) Point
 	Double(p Point) Point
 }
+
+// Model defines the curve shape
+type Model int
+
+const (
+	// ModelWeierstrass is a Weierstrass curve.
+	ModelWeierstrass Model = iota
+	// ModelMontgomery is a Montgomery curve.
+	ModelMontgomery
+	// ModelEdwards is a Edwards curve.
+	ModelEdwards
+)

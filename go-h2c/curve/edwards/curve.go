@@ -24,7 +24,7 @@ func (e *curve) NewPoint(x, y GF.Elt) C.Point {
 }
 
 func (e *curve) Identity() C.Point {
-	return &point{e: e, x: e.F.Zero(), y: e.F.Zero()}
+	return &point{e: e, x: e.F.Zero(), y: e.F.One()}
 }
 
 func (e *curve) IsOnCurve(p C.Point) bool {
