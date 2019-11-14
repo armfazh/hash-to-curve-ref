@@ -23,7 +23,7 @@ func newFp2(m modulus) Field { return fp2{m} }
 
 func (f fp2) Elt(in interface{}) Elt {
 	var a, b *big.Int
-	if v, ok := in.([]interface{}); ok {
+	if v, ok := in.([]interface{}); ok && len(v) == 2 {
 		a = f.fromType(v[0])
 		b = f.fromType(v[1])
 	} else {

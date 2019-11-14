@@ -37,10 +37,17 @@ type hasArith interface {
 	Inv(x Elt) Elt
 }
 
-type hasCmov interface{ CMov(x, y Elt, b bool) Elt }
-type hasSgn0 interface{ Sgn0(x Elt) int }
-type hasInv0 interface{ Inv0(x Elt) Elt }
-type hasSqrt interface {
+// HasCmov is
+type HasCmov interface{ CMov(x, y Elt, b bool) Elt }
+
+// HasSgn0 is
+type HasSgn0 interface{ Sgn0(x Elt) int }
+
+// HasInv0 is
+type HasInv0 interface{ Inv0(x Elt) Elt }
+
+// HasSqrt is
+type HasSqrt interface {
 	Sqrt(x Elt) Elt
 	IsSquare(x Elt) bool
 }

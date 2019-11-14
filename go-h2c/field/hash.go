@@ -31,7 +31,7 @@ func HashToField(
 	msgPrime := hkdf.Extract(H, append(msg, byte(0)), dst)
 
 	m := F.Ext()
-	e := make([]*big.Int, m)
+	e := make([]interface{}, m)
 	t := make([]byte, L)
 
 	for i := uint(1); i <= m; i++ {
@@ -40,8 +40,8 @@ func HashToField(
 		if _, err := io.ReadFull(rd, t); err != nil {
 			panic("error on hdkf")
 		}
-		e[i-1] = new(big.Int).SetBytes(t)
-		e[i-1].Mod(e[i-1], F.P())
+		ei := new(big.Int).SetBytes(t)
+		e[i-1] = ei.Mod(ei, F.P())
 	}
 	return F.Elt(e)
 }

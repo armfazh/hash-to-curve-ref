@@ -49,7 +49,15 @@ func newFp(mod modulus) Field {
 	return f
 }
 
-func (f fp) Elt(in interface{}) Elt { return &fpElt{f.fromType(in)} }
+func (f fp) Elt(in interface{}) Elt {
+	var n *big.Int
+	if v, ok := in.([]interface{}); ok && len(v) == 1 {
+		n = f.fromType(v[0])
+	} else {
+		n = f.fromType(in)
+	}
+	return &fpElt{n}
+}
 func (f fp) P() *big.Int            { return f.p }
 func (f fp) Rand(r io.Reader) Elt   { e, _ := rand.Int(r, f.p); return &fpElt{e} }
 func (f fp) String() string         { return "GF(" + f.name + ")" }
