@@ -1,6 +1,10 @@
 package curve
 
-import GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+import (
+	"math/big"
+
+	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+)
 
 // Point is an elliptic curve point
 type Point interface {
@@ -12,21 +16,30 @@ type Point interface {
 // EllCurve is an elliptic curve
 type EllCurve interface {
 	NewPoint(x, y GF.Elt) Point
-	Identity() Point
-	IsOnCurve(Point) bool
-	Neg(p Point) Point
-	Add(p, q Point) Point
-	Double(p Point) Point
+	hasArith
+	hasParams
 }
 
-// Model defines the curve shape
-type Model int
+type hasArith interface {
+	Identity() Point
+	IsOnCurve(Point) bool
+	Neg(Point) Point
+	Double(Point) Point
+	Add(Point, Point) Point
+}
 
-const (
-	// ModelWeierstrass is a Weierstrass curve.
-	ModelWeierstrass Model = iota
-	// ModelMontgomery is a Montgomery curve.
-	ModelMontgomery
-	// ModelEdwards is a Edwards curve.
-	ModelEdwards
-)
+// Params is
+type Params struct {
+	F       GF.Field
+	A, B, D GF.Elt
+	H       *big.Int
+	R       *big.Int
+}
+
+func (e *Params) Order() *big.Int    { return e.R }
+func (e *Params) Cofactor() *big.Int { return e.H }
+
+type hasParams interface {
+	Order() *big.Int
+	Cofactor() *big.Int
+}

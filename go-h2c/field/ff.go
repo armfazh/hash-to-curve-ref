@@ -60,8 +60,8 @@ type Elt interface {
 // NewFromID is
 func NewFromID(id Prime) Field { return getFromID(id) }
 
-// NewGF is
-func NewGF(p interface{}, m uint, name string) Field {
+// New is
+func New(p interface{}, m uint, name string) Field {
 	if !(m == 1 || m == 2) {
 		panic("not implemented")
 	}
