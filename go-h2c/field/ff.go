@@ -41,14 +41,14 @@ type hasArith interface {
 // HasCMov is
 type HasCMov interface{ CMov(x, y Elt, b bool) Elt }
 
-// HasSgn0BE is
-type HasSgn0BE interface{ Sgn0BE(x Elt) int }
-
-// HasSgn0LE is
-type HasSgn0LE interface{ Sgn0LE(x Elt) int }
+// HasSgn0 is
+type HasSgn0 interface {
+	Sgn0BE(Elt) int
+	Sgn0LE(Elt) int
+}
 
 // HasInv0 is
-type HasInv0 interface{ Inv0(x Elt) Elt }
+type HasInv0 interface{ Inv0(Elt) Elt }
 
 // HasSqrt is
 type HasSqrt interface{ Sqrt(Elt) Elt }
