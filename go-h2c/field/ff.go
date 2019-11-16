@@ -1,31 +1,32 @@
 package field
 
 import (
-	"fmt"
 	"io"
 	"math/big"
 )
 
+// Elt is a field element
+type Elt interface {
+	Copy() Elt
+}
+
 // Field is
 type Field interface {
-	Elt(interface{}) Elt  // Constructor of Elements
-	Rand(r io.Reader) Elt // Constructor of Elements at Random
-	Zero() Elt            // Returns the one element
+	Zero() Elt            // Constructor of elements
 	One() Elt             // Returns the one element
-	Ext() uint            // Extension degree
+	Elt(interface{}) Elt  // Constructor of elements from a value
+	Rand(r io.Reader) Elt // Constructor of elements at random
+	P() *big.Int          // Characteristic of the field
+	Ext() uint            // Extension degree of field
 	BitLen() int          // Bit length of modulus
-	P() *big.Int
 	hasArith
 	hasPredicates
-	// hasCmov
-	// hasSgn0
-	// hasInv0
-	// hasSqrt
 }
 
 type hasPredicates interface {
-	AreEqual(x, y Elt) bool
+	AreEqual(Elt, Elt) bool
 	IsZero(Elt) bool
+	IsSquare(Elt) bool
 }
 
 type hasArith interface {
@@ -37,46 +38,17 @@ type hasArith interface {
 	Inv(x Elt) Elt
 }
 
-// HasCmov is
-type HasCmov interface{ CMov(x, y Elt, b bool) Elt }
+// HasCMov is
+type HasCMov interface{ CMov(x, y Elt, b bool) Elt }
 
-// HasSgn0 is
-type HasSgn0 interface{ Sgn0(x Elt) int }
+// HasSgn0BE is
+type HasSgn0BE interface{ Sgn0BE(x Elt) int }
+
+// HasSgn0LE is
+type HasSgn0LE interface{ Sgn0LE(x Elt) int }
 
 // HasInv0 is
 type HasInv0 interface{ Inv0(x Elt) Elt }
 
 // HasSqrt is
-type HasSqrt interface {
-	Sqrt(x Elt) Elt
-	IsSquare(x Elt) bool
-}
-
-// Elt is
-type Elt interface {
-	Copy() Elt
-}
-
-// NewFromID is
-func NewFromID(id Prime) Field { return getFromID(id) }
-
-// New is
-func New(p interface{}, m uint, name string) Field {
-	if !(m == 1 || m == 2) {
-		panic("not implemented")
-	}
-	modulus := modulus{
-		name: name,
-		p:    fromType(p),
-	}
-	if !modulus.p.ProbablyPrime(5) {
-		panic(fmt.Errorf("p= %v is not prime", p))
-	}
-	switch m {
-	case 1:
-		return newFp(modulus)
-	case 2:
-		return newFp2(modulus)
-	}
-	return nil
-}
+type HasSqrt interface{ Sqrt(Elt) Elt }

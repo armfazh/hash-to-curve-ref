@@ -5,16 +5,6 @@ import (
 	"math/big"
 )
 
-type modulus struct {
-	name string
-	p    *big.Int
-}
-
-func (m modulus) fromType(in interface{}) *big.Int {
-	p := fromType(in)
-	return p.Mod(p, m.p)
-}
-
 func bigFromString(s string) *big.Int {
 	p := new(big.Int)
 	if _, ok := p.SetString(s, 0); !ok {

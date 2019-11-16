@@ -7,179 +7,164 @@ import (
 	"math/big"
 )
 
-// fpElt is a prime field fpElt.
+// fpElt is a prime field element.
 type fpElt struct{ n *big.Int }
 
 func (e fpElt) String() string { return "0x" + e.n.Text(16) }
+func (e fpElt) Copy() Elt      { return &fpElt{new(big.Int).Set(e.n)} }
 
-func (e fpElt) Copy() Elt { return &fpElt{new(big.Int).Set(e.n)} }
-
-// fp implements prime field arithmetic.
+// fp implements a prime field.
 type fp struct {
-	modulus
-	cte struct {
+	p    *big.Int
+	name string
+	cte  struct {
 		pMinus1div2 *big.Int
 		pMinus2     *big.Int
 	}
-	sqrt sqrtMethod
+	HasSqrt
 }
 
-func newFp(mod modulus) Field {
-	var s, k big.Int
-	var sqrt sqrtMethod
-	if uint64(3) == s.Mod(mod.p, k.SetInt64(4)).Uint64() {
-		sqrt = sqrt3mod4
-	} else if uint64(5) == s.Mod(mod.p, k.SetInt64(8)).Uint64() {
-		sqrt = sqrt5mod8
-	} else {
-		panic(fmt.Errorf("no square root method supported for this prime: %v", mod.p))
+// NewFromID is
+func NewFromID(id Prime) Field { return getFromID(id) }
+
+// NewFp is
+func NewFp(name string, p interface{}) Field {
+	prime := fromType(p)
+	if !prime.ProbablyPrime(4) {
+		panic(fmt.Errorf("Modulus is not prime p:%v", prime))
 	}
-	pMinus1div2 := big.NewInt(1)
-	pMinus1div2.Sub(mod.p, pMinus1div2)
-	pMinus1div2.Lsh(pMinus1div2, 1)
-
-	pMinus2 := big.NewInt(2)
-	pMinus2.Sub(mod.p, pMinus2)
-
-	var f fp
-	f.modulus = mod
-	f.sqrt = sqrt
-	f.cte.pMinus1div2 = pMinus1div2
-	f.cte.pMinus2 = pMinus2
+	f := fp{p: prime, name: name}
+	f.precmp()
 	return f
 }
 
+func (f *fp) precmp() {
+	t := big.NewInt(16)
+	pMod16 := t.Mod(f.p, t).Uint64()
+	switch {
+	case pMod16%4 == uint64(3):
+		f.HasSqrt = generateSqrt3mod4(f)
+	case pMod16%8 == uint64(5):
+		f.HasSqrt = generateSqrt5mod8(f)
+	case pMod16%16 == uint64(9):
+		f.HasSqrt = generateSqrt9mod16(f)
+	case pMod16%16 == uint64(1):
+		f.HasSqrt = generateSqrt1mod16(f)
+	}
+
+	pMinus1div2 := big.NewInt(1)
+	pMinus1div2.Sub(f.p, pMinus1div2)
+	pMinus1div2.Rsh(pMinus1div2, 1)
+
+	pMinus2 := big.NewInt(2)
+	pMinus2.Sub(f.p, pMinus2)
+	f.cte.pMinus1div2 = pMinus1div2
+	f.cte.pMinus2 = pMinus2
+}
+
+func (f fp) String() string       { return "GF(" + f.name + ")" }
+func (f fp) Zero() Elt            { return &fpElt{big.NewInt(0)} }
+func (f fp) One() Elt             { return &fpElt{big.NewInt(1)} }
+func (f fp) Rand(r io.Reader) Elt { e, _ := rand.Int(r, f.p); return &fpElt{e} }
+func (f fp) P() *big.Int          { return f.p }
+func (f fp) Ext() uint            { return uint(1) }
+func (f fp) BitLen() int          { return f.p.BitLen() }
 func (f fp) Elt(in interface{}) Elt {
 	var n *big.Int
 	if v, ok := in.([]interface{}); ok && len(v) == 1 {
-		n = f.fromType(v[0])
+		n = fromType(v[0])
 	} else {
-		n = f.fromType(in)
+		n = fromType(in)
 	}
-	return &fpElt{n}
+	return f.mod(n)
 }
-func (f fp) P() *big.Int            { return f.p }
-func (f fp) Rand(r io.Reader) Elt   { e, _ := rand.Int(r, f.p); return &fpElt{e} }
-func (f fp) String() string         { return "GF(" + f.name + ")" }
-func (f fp) Ext() uint              { return uint(1) }
-func (f fp) Zero() Elt              { return f.Elt(0) }
-func (f fp) One() Elt               { return f.Elt(1) }
-func (f fp) BitLen() int            { return f.p.BitLen() }
+func (f fp) mod(x *big.Int) Elt { return &fpElt{x.Mod(x, f.p)} }
+
+// Implementing hasPredicates
+
+func (f fp) IsZero(x Elt) bool      { return x.(*fpElt).n.Sign() == 0 }
 func (f fp) AreEqual(x, y Elt) bool { return f.IsZero(f.Sub(x, y)) }
-func (f fp) IsZero(x Elt) bool      { return x.(*fpElt).n.Mod(x.(*fpElt).n, f.p).Sign() == 0 }
+func (f fp) IsSquare(x Elt) bool    { return f.AreEqual(f.Exp(x, f.cte.pMinus1div2), f.One()) }
 
-// // fpEltFromBytes returns an fpElt reduced modulo p.
-// func (f fp) fpEltFromBytes(b []byte) Elt {
-// 	i := new(big.Int).SetBytes(b)
-// 	i.Mod(i, f.p)
-// 	return &fpElt{i}
-// }
-//
-// // fpEltToBytes returns an fpElt reduced modulo p.
-// func (f fp) fpEltToBytes(x Elt) []byte {
-// 	x.(fpElt).n.Mod(x.(fpElt).n, f.p)
-// 	return x.(fpElt).n.Bytes()
-// }
+// Implementing hasArith
 
-func (f fp) Neg(x Elt) Elt {
-	z := new(big.Int).Set(x.(*fpElt).n)
-	z.Neg(z).Mod(z, f.p)
-	return &fpElt{z}
+func (f fp) Neg(x Elt) Elt    { return f.mod(new(big.Int).Neg(x.(*fpElt).n)) }
+func (f fp) Add(x, y Elt) Elt { return f.mod(new(big.Int).Add(x.(*fpElt).n, y.(*fpElt).n)) }
+func (f fp) Sub(x, y Elt) Elt { return f.mod(new(big.Int).Sub(x.(*fpElt).n, y.(*fpElt).n)) }
+func (f fp) Mul(x, y Elt) Elt { return f.mod(new(big.Int).Mul(x.(*fpElt).n, y.(*fpElt).n)) }
+func (f fp) Sqr(x Elt) Elt    { return f.mod(new(big.Int).Mul(x.(*fpElt).n, x.(*fpElt).n)) }
+func (f fp) Inv(x Elt) Elt    { return f.Exp(x, f.cte.pMinus2) }
+func (f fp) Exp(x Elt, y *big.Int) Elt {
+	return &fpElt{new(big.Int).Exp(x.(*fpElt).n, y, f.p)}
 }
 
-func (f fp) Add(x, y Elt) Elt {
-	z := new(big.Int).Add(x.(*fpElt).n, y.(*fpElt).n)
-	z.Mod(z, f.p)
-	return &fpElt{z}
-}
-
-func (f fp) Sub(x, y Elt) Elt {
-	z := new(big.Int).Sub(x.(*fpElt).n, y.(*fpElt).n)
-	z.Mod(z, f.p)
-	return &fpElt{z}
-}
-
-func (f fp) Mul(x, y Elt) Elt {
-	z := new(big.Int).Mul(x.(*fpElt).n, y.(*fpElt).n)
-	z.Mod(z, f.p)
-	return &fpElt{z}
-}
-
-func (f fp) Sqr(x Elt) Elt {
-	z := new(big.Int).Mul(x.(*fpElt).n, x.(*fpElt).n)
-	z.Mod(z, f.p)
-	return &fpElt{z}
-}
+// Implementing HasInv0
 
 func (f fp) Inv0(x Elt) Elt { return f.Inv(x) }
 
-func (f fp) Inv(x Elt) Elt {
-	z := new(big.Int).Exp(x.(*fpElt).n, f.cte.pMinus2, f.p)
-	return &fpElt{z}
-}
+// Implementing HasSgn0BE
 
-func (f fp) IsSquare(x Elt) bool {
-	var z big.Int
-	leg := z.Exp(x.(*fpElt).n, f.cte.pMinus1div2, f.p)
-	return leg.Sign() >= 0
-}
+func (f fp) Sgn0BE(x Elt) int { return 2*(f.cte.pMinus1div2.Cmp(x.(*fpElt).n)&^1) - 1 }
 
-type sqrtMethod int
+// Implementing HasSgn0LE
 
-const (
-	sqrt3mod4 sqrtMethod = iota
-	sqrt5mod8
-)
+func (f fp) Sgn0LE(x Elt) int { return 1 - 2*int(x.(*fpElt).n.Bit(0)) }
 
-// Sqrt returns a square root of x.
-func (f fp) Sqrt(x Elt) Elt {
-	switch f.sqrt {
-	case sqrt3mod4:
-		return f.sqrt3mod4(x)
-	case sqrt5mod8:
-		return f.sqrt5mod8(x)
-	default:
-		panic("no square root method supported for this field")
-	}
-}
+// Implementing HasCMov
 
-func (f fp) sqrt3mod4(x Elt) Elt {
-	var z, exp big.Int
-	exp.SetInt64(1)
-	exp.Add(f.p, &exp)
-	exp.Lsh(f.p, 2)
-	z.Exp(x.(*fpElt).n, &exp, f.p)
-	return &fpElt{&z}
-}
-
-func (f fp) sqrt5mod8(x Elt) Elt {
-	var z, exp big.Int
-	exp.SetInt64(1)
-	exp.Add(f.p, &exp)
-	exp.Lsh(f.p, 2)
-	z.Exp(x.(*fpElt).n, &exp, f.p)
-	return &fpElt{&z}
-}
-
-// Sgn0 returns the sign of x.
-func (f fp) Sgn0(x Elt) int {
-	var p2 big.Int
-	p2.SetInt64(1)
-	p2.Sub(f.p, &p2)
-	p2.Lsh(&p2, 1)
-	if x.(*fpElt).n.Cmp(&p2) >= 0 {
-		return -1
-	}
-	return 1
-}
-
-// Cmov sets x with y if b is true.
 func (f fp) CMov(x, y Elt, b bool) Elt {
-	z := &fpElt{}
+	var z big.Int
 	if b {
-		z.n.Set(y.(*fpElt).n)
+		z.Set(y.(*fpElt).n)
 	} else {
-		z.n.Set(x.(*fpElt).n)
+		z.Set(x.(*fpElt).n)
 	}
-	return z
+	return &fpElt{&z}
 }
+
+type sqrt3mod4 struct {
+	*fp
+	exp *big.Int
+}
+
+func generateSqrt3mod4(f *fp) HasSqrt {
+	e := big.NewInt(1)
+	e.Add(f.p, e)
+	e.Rsh(e, 2)
+	return sqrt3mod4{exp: e, fp: f}
+}
+
+func (s sqrt3mod4) Sqrt(x Elt) Elt { return s.Exp(x, s.exp) }
+
+type sqrt5mod8 struct {
+	*fp
+	sqrtOne *fpElt
+	exp     *big.Int
+}
+
+func generateSqrt5mod8(f *fp) HasSqrt {
+	// calculates s = sqrt(-1) for p=8*k+5
+	// t = 2^k
+	// s = 2*t^3+t
+	k := big.NewInt(5)
+	k.Sub(f.p, k)           // p-5
+	k.Rsh(k, 3)             // k = (p-5)/8
+	t := f.Exp(f.Elt(2), k) // t = 2^k
+	s := f.Sqr(t)           // t^2
+	s = f.Add(s, s)         // 2t^2
+	s = f.Add(s, f.One())   // 2t^2+1
+	s = f.Mul(s, t)         // t(2t^2+1)
+	k.Add(k, big.NewInt(1)) // e = k+1 = (p+3)/8
+	return sqrt5mod8{fp: f, exp: k, sqrtOne: s.(*fpElt)}
+}
+
+func (s sqrt5mod8) Sqrt(x Elt) Elt {
+	t0 := s.Exp(x, s.exp)
+	t1 := s.Sqr(t0)
+	e := s.AreEqual(x, t1)
+	t1 = s.Mul(t0, s.sqrtOne)
+	return s.CMov(t1, t0, e)
+}
+
+func generateSqrt9mod16(f *fp) HasSqrt { panic("not implemented yet") }
+func generateSqrt1mod16(f *fp) HasSqrt { panic("not implemented yet") }

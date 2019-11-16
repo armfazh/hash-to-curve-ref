@@ -17,27 +17,38 @@ func (e fp2Elt) String() string {
 
 func (e fp2Elt) Copy() Elt { r := &fp2Elt{}; r.a.Set(e.a); r.b.Set(e.b); return r }
 
-type fp2 struct{ modulus }
+type fp2 struct {
+	p    *big.Int
+	name string
+}
 
-func newFp2(m modulus) Field { return fp2{m} }
+// NewFp2 is
+func NewFp2(name string, p interface{}) Field {
+	prime := fromType(p)
+	if !prime.ProbablyPrime(4) {
+		panic("p is not prime")
+	}
+	return fp2{p: prime, name: name}
+}
 
 func (f fp2) Elt(in interface{}) Elt {
 	var a, b *big.Int
 	if v, ok := in.([]interface{}); ok && len(v) == 2 {
-		a = f.fromType(v[0])
-		b = f.fromType(v[1])
+		a = fromType(v[0])
+		b = fromType(v[1])
 	} else {
-		a = f.fromType(in)
+		a = fromType(in)
 		b = big.NewInt(0)
 	}
-	return &fp2Elt{a, b}
+	return f.mod(a, b)
 }
-func (f fp2) P() *big.Int            { return f.p }
-func (f fp2) String() string         { return "GF(" + f.name + ") Irred: i^2+1" }
-func (f fp2) Ext() uint              { return uint(2) }
-func (f fp2) Zero() Elt              { return f.Elt(0) }
-func (f fp2) One() Elt               { return f.Elt(1) }
-func (f fp2) BitLen() int            { return f.p.BitLen() }
+func (f fp2) P() *big.Int    { return f.p }
+func (f fp2) String() string { return "GF(" + f.name + ") Irred: i^2+1" }
+func (f fp2) Ext() uint      { return uint(2) }
+func (f fp2) Zero() Elt      { return f.Elt(0) }
+func (f fp2) One() Elt       { return f.Elt(1) }
+func (f fp2) BitLen() int    { return f.p.BitLen() }
+
 func (f fp2) AreEqual(x, y Elt) bool { return f.IsZero(f.Sub(x, y)) }
 func (f fp2) IsZero(x Elt) bool {
 	e := x.(*fp2Elt)
@@ -51,6 +62,7 @@ func (f fp2) Rand(r io.Reader) Elt {
 	return &fp2Elt{a, b}
 }
 
+func (f fp2) mod(a, b *big.Int) Elt { return &fp2Elt{a: a.Mod(a, f.p), b: b.Mod(b, f.p)} }
 func (f fp2) Add(x, y Elt) Elt {
 	a := new(big.Int).Add(x.(fp2Elt).a, y.(fp2Elt).a)
 	b := new(big.Int).Add(x.(fp2Elt).b, y.(fp2Elt).b)
