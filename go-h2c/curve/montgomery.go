@@ -1,8 +1,6 @@
 package curve
 
 import (
-	"fmt"
-
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
@@ -14,9 +12,7 @@ type MTCurve = *ecMt
 // NewMontgomery returns a Montgomery curve
 func NewMontgomery(ecParams *Params) EllCurve { return &ecMt{ecParams} }
 
-func (e *ecMt) String() string {
-	return fmt.Sprintf("By^2=x^3+Ax^2+x\nF: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
-}
+func (e *ecMt) String() string { return "By^2=x^3+Ax^2+x\n" + e.Params.String() }
 func (e *ecMt) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
 		return isZero
@@ -123,9 +119,8 @@ type ptMt struct {
 	*afPoint
 }
 
-func (p *ptMt) Copy() Point {
-	return &ptMt{p.ecMt, &afPoint{x: p.x.Copy(), y: p.y.Copy()}}
-}
+func (p *ptMt) String() string { return p.afPoint.String() }
+func (p *ptMt) Copy() Point    { return &ptMt{p.ecMt, p.copy()} }
 func (p *ptMt) IsEqual(q Point) bool {
 	qq := q.(*ptMt)
 	return p.ecMt == qq.ecMt && p.isEqual(p.F, qq.afPoint)

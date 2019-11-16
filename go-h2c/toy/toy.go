@@ -7,7 +7,7 @@ import (
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-var f53 = GF.New(53, uint(1), "p53")
+var f53 = GF.NewFp("p53", 53)
 
 // ToyCurves is
 var ToyCurves = []C.EllCurve{

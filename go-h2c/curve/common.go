@@ -27,5 +27,5 @@ type infPoint struct{}
 
 func (p infPoint) String() string        { return "(inf)" }
 func (p *infPoint) Copy() Point          { return &infPoint{} }
-func (p *infPoint) IsEqual(q Point) bool { _, ok := q.(*infPoint); return ok }
+func (p *infPoint) IsEqual(q Point) bool { _, t := q.(*infPoint); return t }
 func (p *infPoint) IsIdentity() bool     { return true }

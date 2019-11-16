@@ -1,6 +1,7 @@
 package curve
 
 import (
+	"fmt"
 	"math/big"
 
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
@@ -36,10 +37,15 @@ type Params struct {
 	R       *big.Int
 }
 
+func (e *Params) String() string {
+	return fmt.Sprintf("F: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
+}
 func (e *Params) Order() *big.Int    { return e.R }
 func (e *Params) Cofactor() *big.Int { return e.H }
+func (e *Params) Field() GF.Field    { return e.F }
 
 type hasParams interface {
+	Field() GF.Field
 	Order() *big.Int
 	Cofactor() *big.Int
 }

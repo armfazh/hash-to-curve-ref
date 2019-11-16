@@ -1,8 +1,6 @@
 package curve
 
 import (
-	"fmt"
-
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
@@ -11,22 +9,24 @@ type ecWe struct{ *Params }
 // Curve is a Weierstrass curve
 type WECurve = *ecWe
 
-func (e *ecWe) String() string {
-	return fmt.Sprintf("y^2=x^3+Ax+B\nF: %v\nA: %v\nD: %v\n", e.F, e.A, e.B)
-}
+func (e *ecWe) String() string { return "y^2=x^3+Ax+B\n" + e.Params.String() }
 func (e *ecWe) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
 		return isZero
 	}
 	P := p.(*ptWe)
 	F := e.F
-	var t0, t1 GF.Elt
-	t0 = F.Sqr(P.x)     // x^2
-	t0 = F.Add(t0, e.A) // x^2+A
-	t0 = F.Mul(t0, P.x) // (x^2+A)x
-	t0 = F.Add(t0, e.B) // (x^2+A)x+B
-	t1 = F.Sqr(P.y)     // y^2
+	t0 := e.EvalRHS(P.x)
+	t1 := F.Sqr(P.y) // y^2
 	return F.AreEqual(t0, t1)
+}
+
+func (e *ecWe) EvalRHS(x GF.Elt) GF.Elt {
+	F := e.F
+	t0 := F.Sqr(x)        // x^2
+	t0 = F.Add(t0, e.A)   // x^2+A
+	t0 = F.Mul(t0, x)     // (x^2+A)x
+	return F.Add(t0, e.B) // (x^2+A)x+B
 }
 
 // NewWeierstrass returns a Weierstrass curve
@@ -114,9 +114,8 @@ type ptWe struct {
 	*afPoint
 }
 
-func (p *ptWe) Copy() Point {
-	return &ptWe{p.ecWe, &afPoint{x: p.x.Copy(), y: p.y.Copy()}}
-}
+func (p *ptWe) String() string { return p.afPoint.String() }
+func (p *ptWe) Copy() Point    { return &ptWe{p.ecWe, p.copy()} }
 func (p *ptWe) IsEqual(q Point) bool {
 	qq := q.(*ptWe)
 	return p.ecWe == qq.ecWe && p.isEqual(p.F, qq.afPoint)

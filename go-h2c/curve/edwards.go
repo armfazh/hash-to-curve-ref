@@ -72,9 +72,8 @@ type ptTe struct {
 	*afPoint
 }
 
-func (p *ptTe) Copy() Point {
-	return &ptTe{p.ecTe, &afPoint{x: p.x.Copy(), y: p.y.Copy()}}
-}
+func (p *ptTe) String() string { return p.afPoint.String() }
+func (p *ptTe) Copy() Point    { return &ptTe{p.ecTe, p.copy()} }
 func (p *ptTe) IsEqual(q Point) bool {
 	qq := q.(*ptTe)
 	return p.ecTe == qq.ecTe && p.isEqual(p.F, qq.afPoint)
