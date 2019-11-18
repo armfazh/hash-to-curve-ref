@@ -67,6 +67,7 @@ func (f fp) Zero() Elt            { return &fpElt{big.NewInt(0)} }
 func (f fp) One() Elt             { return &fpElt{big.NewInt(1)} }
 func (f fp) Rand(r io.Reader) Elt { e, _ := rand.Int(r, f.p); return &fpElt{e} }
 func (f fp) P() *big.Int          { return f.p }
+func (f fp) Order() *big.Int      { return f.p }
 func (f fp) Ext() uint            { return uint(1) }
 func (f fp) BitLen() int          { return f.p.BitLen() }
 func (f fp) Elt(in interface{}) Elt {

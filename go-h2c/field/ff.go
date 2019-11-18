@@ -17,6 +17,7 @@ type Field interface {
 	Elt(interface{}) Elt  // Constructor of elements from a value
 	Rand(r io.Reader) Elt // Constructor of elements at random
 	P() *big.Int          // Characteristic of the field
+	Order() *big.Int      // Size of the field
 	Ext() uint            // Extension degree of field
 	BitLen() int          // Bit length of modulus
 	hasArith

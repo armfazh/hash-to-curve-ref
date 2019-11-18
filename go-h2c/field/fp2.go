@@ -42,12 +42,13 @@ func (f fp2) Elt(in interface{}) Elt {
 	}
 	return f.mod(a, b)
 }
-func (f fp2) P() *big.Int    { return f.p }
-func (f fp2) String() string { return "GF(" + f.name + ") Irred: i^2+1" }
-func (f fp2) Ext() uint      { return uint(2) }
-func (f fp2) Zero() Elt      { return f.Elt(0) }
-func (f fp2) One() Elt       { return f.Elt(1) }
-func (f fp2) BitLen() int    { return f.p.BitLen() }
+func (f fp2) P() *big.Int     { return f.p }
+func (f fp2) Order() *big.Int { return new(big.Int).Mul(f.p, f.p) }
+func (f fp2) String() string  { return "GF(" + f.name + ") Irred: i^2+1" }
+func (f fp2) Ext() uint       { return uint(2) }
+func (f fp2) Zero() Elt       { return f.Elt(0) }
+func (f fp2) One() Elt        { return f.Elt(1) }
+func (f fp2) BitLen() int     { return f.p.BitLen() }
 
 func (f fp2) AreEqual(x, y Elt) bool { return f.IsZero(f.Sub(x, y)) }
 func (f fp2) IsZero(x Elt) bool {
