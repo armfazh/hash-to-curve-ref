@@ -32,7 +32,7 @@ func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
 		s.precmp(sgn0)
 		return s
 	}
-	panic(fmt.Errorf("Failed restrictions for sswu "))
+	panic(fmt.Errorf("Failed restrictions for sswu"))
 }
 
 func (m *sswu) precmp(sgn0 string) {

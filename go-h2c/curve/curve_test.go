@@ -8,26 +8,29 @@ import (
 )
 
 func TestCurves(t *testing.T) {
-	for i := range toy.ToyCurves {
-		t.Run("", func(t *testing.T) {
-			testAdd(t, toy.ToyCurves[i], toy.ToyPoints[i], toy.ToyCurves[i].Order().Uint64())
+	for name, EC := range toy.ToyCurves {
+		E := EC.E
+		P := EC.P
+		t.Run(name, func(t *testing.T) {
+			testAdd(t, E, P)
 		})
 	}
 }
 
-func testAdd(t *testing.T, ec C.EllCurve, g C.Point, order uint64) {
+func testAdd(t *testing.T, e C.EllCurve, g C.Point) {
+	order := e.Order().Uint64()
 	T := make([]C.Point, order)
-	T[0] = ec.Identity()
-	for i := 1; i < len(T); i++ {
-		T[i] = ec.Add(T[i-1], g)
-		if !ec.IsOnCurve(T[i]) {
+	T[0] = e.Identity()
+	for i := uint64(1); i < order; i++ {
+		T[i] = e.Add(T[i-1], g)
+		if !e.IsOnCurve(T[i]) {
 			t.Fatalf("point not in the curve: %v\n", T[i])
 		}
 	}
 	for _, P := range T {
 		for _, Q := range T {
-			R := ec.Add(P, Q)
-			if !ec.IsOnCurve(R) {
+			R := e.Add(P, Q)
+			if !e.IsOnCurve(R) {
 				t.Fatalf("point not in the curve: %v\n", R)
 			}
 		}
@@ -35,18 +38,19 @@ func testAdd(t *testing.T, ec C.EllCurve, g C.Point, order uint64) {
 }
 
 func BenchmarkCurve(b *testing.B) {
-	ec := toy.ToyCurves[0]
-	P := toy.ToyPoints[0]
-	Q := ec.Double(P)
+	ec := toy.ToyCurves["W0"]
+	e := ec.E
+	P := ec.P
+	Q := e.Double(P)
 	b.Run("double", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			P = ec.Double(P)
+			P = e.Double(P)
 		}
 	})
 
 	b.Run("add", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			P = ec.Add(P, Q)
+			P = e.Add(P, Q)
 		}
 	})
 }

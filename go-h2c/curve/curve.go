@@ -29,6 +29,14 @@ type hasArith interface {
 	Add(Point, Point) Point
 }
 
+type Model int
+
+const (
+	Weierstrass Model = iota
+	Montgomery
+	Edwards
+)
+
 // Params is
 type Params struct {
 	F       GF.Field
