@@ -22,6 +22,10 @@ type Field interface {
 	BitLen() int          // Bit length of modulus
 	hasArith
 	hasPredicates
+	hasCMov
+	hasSgn0
+	hasInv0
+	hasSqrt
 }
 
 type hasPredicates interface {
@@ -39,17 +43,10 @@ type hasArith interface {
 	Inv(x Elt) Elt
 }
 
-// HasCMov is
-type HasCMov interface{ CMov(x, y Elt, b bool) Elt }
-
-// HasSgn0 is
-type HasSgn0 interface {
+type hasCMov interface{ CMov(x, y Elt, b bool) Elt }
+type hasInv0 interface{ Inv0(Elt) Elt }
+type hasSqrt interface{ Sqrt(Elt) Elt }
+type hasSgn0 interface {
 	Sgn0BE(Elt) int
 	Sgn0LE(Elt) int
 }
-
-// HasInv0 is
-type HasInv0 interface{ Inv0(Elt) Elt }
-
-// HasSqrt is
-type HasSqrt interface{ Sqrt(Elt) Elt }

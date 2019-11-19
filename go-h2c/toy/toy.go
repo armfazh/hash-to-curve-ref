@@ -32,6 +32,11 @@ func init() {
 		R: big.NewInt(54), H: big.NewInt(2)},
 		f53.Elt(13), f53.Elt(5))
 
+	RegisterToyCurve("W1iso", C.Weierstrass, &C.Params{
+		F: f53, A: f53.Elt(38), B: f53.Elt(22),
+		R: big.NewInt(54), H: big.NewInt(2)},
+		f53.Elt(41), f53.Elt(45))
+
 	RegisterToyCurve("M0", C.Montgomery, &C.Params{
 		F: f53, A: f53.Elt(4), B: f53.Elt(3),
 		R: big.NewInt(44), H: big.NewInt(4)},
@@ -41,6 +46,7 @@ func init() {
 		F: f53, A: f53.Elt(1), D: f53.Elt(3),
 		R: big.NewInt(44), H: big.NewInt(4)},
 		f53.Elt(17), f53.Elt(49))
+
 }
 
 // RegisterToyCurve is

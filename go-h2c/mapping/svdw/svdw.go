@@ -8,17 +8,8 @@ import (
 	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-type extField interface {
-	GF.Field
-	GF.HasInv0
-	GF.HasSgn0
-	GF.HasCMov
-	GF.HasSqrt
-}
-
 type svdw struct {
 	E              C.WECurve
-	F              extField
 	Z              GF.Elt
 	c1, c2, c3, c4 GF.Elt
 	Sgn0           func(GF.Elt) int
@@ -28,7 +19,7 @@ func (m svdw) String() string { return fmt.Sprintf("SVDW for E: %v", m.E) }
 
 // New is
 func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
-	if s := (&svdw{E: e.(C.WECurve), F: e.Field().(extField), Z: z}); s.verify() {
+	if s := (&svdw{E: e.(C.WECurve), Z: z}); s.verify() {
 		s.precmp(sgn0)
 		return s
 	}
@@ -36,12 +27,12 @@ func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
 }
 
 func (m *svdw) precmp(sgn0 string) {
-	F := m.F
+	F := m.E.F
 	switch sgn0 {
 	case "le":
-		m.Sgn0 = m.F.Sgn0LE
+		m.Sgn0 = F.Sgn0LE
 	case "be":
-		m.Sgn0 = m.F.Sgn0BE
+		m.Sgn0 = F.Sgn0BE
 	}
 	var t0, t1 GF.Elt
 	m.c1 = m.E.EvalRHS(m.Z)  // g(Z)
@@ -68,7 +59,7 @@ func (m *svdw) precmp(sgn0 string) {
 }
 
 func (m svdw) verify() bool {
-	F := m.F
+	F := m.E.F
 	var t0, t1, t2 GF.Elt
 	gz := m.E.EvalRHS(m.Z)
 
@@ -95,7 +86,7 @@ func (m svdw) verify() bool {
 }
 
 func (m *svdw) Map(u GF.Elt) C.Point {
-	F := m.F
+	F := m.E.F
 	var t1, t2, t3, t4 GF.Elt
 	var x1, x2, x3, gx1, gx2, gx, x, y GF.Elt
 	var e1, e2, e3 bool

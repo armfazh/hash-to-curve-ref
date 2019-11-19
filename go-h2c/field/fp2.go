@@ -20,6 +20,9 @@ func (e fp2Elt) Copy() Elt { r := &fp2Elt{}; r.a.Set(e.a); r.b.Set(e.b); return 
 type fp2 struct {
 	p    *big.Int
 	name string
+	cte  struct {
+		pMinus1div2 *big.Int
+	}
 }
 
 // NewFp2 is
@@ -79,12 +82,39 @@ func (f fp2) Sub(x, y Elt) Elt {
 	return fp2Elt{a, b}
 }
 
-func (f fp2) Mul(x, y Elt) Elt          { return nil }
-func (f fp2) Sqr(x Elt) Elt             { return nil }
-func (f fp2) Inv0(x Elt) Elt            { return f.Inv(x) }
-func (f fp2) Inv(x Elt) Elt             { return nil }
-func (f fp2) Neg(x Elt) Elt             { return nil }
-func (f fp2) Sgn0(x Elt) int            { return 0 }
-func (f fp2) CMov(x, y Elt, b bool) Elt { return nil }
-func (f fp2) Sqrt(x Elt) Elt            { return nil }
-func (f fp2) IsSquare(x Elt) bool       { return false }
+func (f fp2) Mul(x, y Elt) Elt    { return nil }
+func (f fp2) Sqr(x Elt) Elt       { return nil }
+func (f fp2) Inv(x Elt) Elt       { return nil }
+func (f fp2) Neg(x Elt) Elt       { return nil }
+func (f fp2) Sqrt(x Elt) Elt      { return nil }
+func (f fp2) IsSquare(x Elt) bool { return false }
+
+func (f fp2) Inv0(x Elt) Elt { return f.Inv(x) }
+func (f fp2) CMov(x, y Elt, b bool) Elt {
+	var za, zb big.Int
+	if b {
+		za.Set(y.(*fp2Elt).a)
+		zb.Set(y.(*fp2Elt).b)
+	} else {
+		za.Set(x.(*fp2Elt).a)
+		zb.Set(x.(*fp2Elt).b)
+	}
+	return &fp2Elt{&za, &zb}
+}
+func (f fp2) Sgn0BE(x Elt) int {
+	/* [TODO] */
+	sb := x.(*fp2Elt).b.Sign()
+	cb := 2*(f.cte.pMinus1div2.Cmp(x.(*fp2Elt).b)&^1) - 1
+	sa := x.(*fp2Elt).a.Sign()
+	ca := 2*(f.cte.pMinus1div2.Cmp(x.(*fp2Elt).a)&^1) - 1
+	return sb*cb + (1-sb)*(sa*ca+(1-sa)*1)
+}
+
+func (f fp2) Sgn0LE(x Elt) int {
+	/* [TODO] */
+	sa := x.(*fp2Elt).a.Sign()
+	ca := 1 - 2*int(x.(*fp2Elt).a.Bit(0))
+	sb := x.(*fp2Elt).b.Sign()
+	cb := 1 - 2*int(x.(*fp2Elt).b.Bit(0))
+	return sa*ca + (1-sa)*(sb*cb+(1-sb)*1)
+}

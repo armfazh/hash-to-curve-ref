@@ -10,7 +10,7 @@ import (
 // fpElt is a prime field element.
 type fpElt struct{ n *big.Int }
 
-func (e fpElt) String() string { return "0x" + e.n.Text(16) }
+func (e fpElt) String() string { return /*"0x" +*/ e.n.Text(10) }
 func (e fpElt) Copy() Elt      { return &fpElt{new(big.Int).Set(e.n)} }
 
 // fp implements a prime field.
@@ -21,7 +21,7 @@ type fp struct {
 		pMinus1div2 *big.Int
 		pMinus2     *big.Int
 	}
-	HasSqrt
+	hasSqrt
 }
 
 // NewFromID is
@@ -43,13 +43,13 @@ func (f *fp) precmp() {
 	pMod16 := t.Mod(f.p, t).Uint64()
 	switch {
 	case pMod16%4 == uint64(3):
-		f.HasSqrt = generateSqrt3mod4(f)
+		f.hasSqrt = generateSqrt3mod4(f)
 	case pMod16%8 == uint64(5):
-		f.HasSqrt = generateSqrt5mod8(f)
+		f.hasSqrt = generateSqrt5mod8(f)
 	case pMod16%16 == uint64(9):
-		f.HasSqrt = generateSqrt9mod16(f)
+		f.hasSqrt = generateSqrt9mod16(f)
 	case pMod16%16 == uint64(1):
-		f.HasSqrt = generateSqrt1mod16(f)
+		f.hasSqrt = generateSqrt1mod16(f)
 	}
 
 	pMinus1div2 := big.NewInt(1)
@@ -99,20 +99,11 @@ func (f fp) Exp(x Elt, y *big.Int) Elt {
 	return &fpElt{new(big.Int).Exp(x.(*fpElt).n, y, f.p)}
 }
 
-// Implementing HasInv0
+// Implementing extended operations
 
-func (f fp) Inv0(x Elt) Elt { return f.Inv(x) }
-
-// Implementing HasSgn0BE
-
+func (f fp) Inv0(x Elt) Elt   { return f.Inv(x) }
 func (f fp) Sgn0BE(x Elt) int { return 2*(f.cte.pMinus1div2.Cmp(x.(*fpElt).n)&^1) - 1 }
-
-// Implementing HasSgn0LE
-
 func (f fp) Sgn0LE(x Elt) int { return 1 - 2*int(x.(*fpElt).n.Bit(0)) }
-
-// Implementing HasCMov
-
 func (f fp) CMov(x, y Elt, b bool) Elt {
 	var z big.Int
 	if b {
@@ -128,7 +119,7 @@ type sqrt3mod4 struct {
 	exp *big.Int
 }
 
-func generateSqrt3mod4(f *fp) HasSqrt {
+func generateSqrt3mod4(f *fp) hasSqrt {
 	e := big.NewInt(1)
 	e.Add(f.p, e)
 	e.Rsh(e, 2)
@@ -143,7 +134,7 @@ type sqrt5mod8 struct {
 	exp     *big.Int
 }
 
-func generateSqrt5mod8(f *fp) HasSqrt {
+func generateSqrt5mod8(f *fp) hasSqrt {
 	// calculates s = sqrt(-1) for p=8*k+5
 	// t = 2^k
 	// s = 2*t^3+t
@@ -167,5 +158,5 @@ func (s sqrt5mod8) Sqrt(x Elt) Elt {
 	return s.CMov(t1, t0, e)
 }
 
-func generateSqrt9mod16(f *fp) HasSqrt { panic("not implemented yet") }
-func generateSqrt1mod16(f *fp) HasSqrt { panic("not implemented yet") }
+func generateSqrt9mod16(f *fp) hasSqrt { panic("not implemented yet") }
+func generateSqrt1mod16(f *fp) hasSqrt { panic("not implemented yet") }

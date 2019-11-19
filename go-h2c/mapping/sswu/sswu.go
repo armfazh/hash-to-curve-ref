@@ -8,17 +8,8 @@ import (
 	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-type extField interface {
-	GF.Field
-	GF.HasInv0
-	GF.HasSgn0
-	GF.HasCMov
-	GF.HasSqrt
-}
-
 type sswu struct {
 	E      C.WECurve
-	F      extField
 	Z      GF.Elt
 	c1, c2 GF.Elt
 	Sgn0   func(GF.Elt) int
@@ -28,7 +19,7 @@ func (m sswu) String() string { return fmt.Sprintf("Simple SWU for E: %v", m.E) 
 
 // New is
 func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
-	if s := (&sswu{E: e.(C.WECurve), F: e.Field().(extField), Z: z}); s.verify() {
+	if s := (&sswu{E: e.(C.WECurve), Z: z}); s.verify() {
 		s.precmp(sgn0)
 		return s
 	}
@@ -39,9 +30,9 @@ func (m *sswu) precmp(sgn0 string) {
 	F := m.E.F
 	switch sgn0 {
 	case "le":
-		m.Sgn0 = m.F.Sgn0LE
+		m.Sgn0 = F.Sgn0LE
 	case "be":
-		m.Sgn0 = m.F.Sgn0BE
+		m.Sgn0 = F.Sgn0BE
 	}
 
 	t0 := F.Inv(m.E.A)    // 1/A
@@ -66,7 +57,7 @@ func (m sswu) verify() bool {
 }
 
 func (m *sswu) Map(u GF.Elt) C.Point {
-	F := m.F
+	F := m.E.F
 	var t1, t2 GF.Elt
 	var x1, x2, gx1, gx2, y2, x, y GF.Elt
 	var e1, e2, e3 bool
