@@ -77,11 +77,6 @@ func (m *svdw) verify() bool {
 	cond3 := F.IsSquare(t0)
 	cond4 := F.IsSquare(gz)
 	cond5 := F.IsSquare(gz2)
-	fmt.Printf("cond1: %v\n", cond1)
-	fmt.Printf("cond2: %v\n", cond2)
-	fmt.Printf("cond3: %v\n", cond3)
-	fmt.Printf("cond4: %v\n", cond4)
-	fmt.Printf("cond5: %v\n", cond5)
 	return cond1 && cond2 && cond3 && (cond4 || cond5)
 }
 

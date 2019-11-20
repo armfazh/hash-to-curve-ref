@@ -1,55 +1,46 @@
-// +build ignore
-
 package h2c
 
 import (
-	// "crypto/hmac"
-	// "golang.org/x/crypto/hkdf"
 	"hash"
-	"io"
-	"math/big"
-	// "github.com/cloudflare/circl/math"
+
+	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
+	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-// Hash2Point implements a hash to point function
-type Hash2Point interface {
-	io.Writer
-	Reset()
-	Sum() (x, y *math.FqElt)
+// HashToPoint is
+type HashToPoint interface {
 	IsRandomOracle() bool
+	Hash(in, dst []byte) C.Point
 }
 
-type encoding struct {
-	hkdf     hash.Hash
-	mapping  func(u *math.EltFq) (x, y *math.EltFq)
-	clearCof func(x, y *math.EltFq)
+// Suite is
+type Suite struct {
+	E     C.EllCurve
+	L     uint
+	HFunc func() hash.Hash
+	mapping.Map
 }
 
-func (e encoding) Reset()                            { e.hkdf.Reset() }
-func (e encoding) Write(p []byte) (n int, err error) { return e.hkdf.Write(p) }
+type EncodeToCurve struct{ *Suite }
 
-type encodeToCurve struct {
-	encoding
+func (s *EncodeToCurve) IsRandomOracle() bool { return false }
+func (s *EncodeToCurve) Hash(in, dst []byte) C.Point {
+	u := GF.HashToField(in, dst, byte(2), s.HFunc, s.E.Field(), s.L)
+	Q := s.MapToCurve(u)
+	P := s.E.ClearCofactor(Q)
+	return P
 }
 
-func (e encodeToCurve) IsRandomOracle() bool { return false }
-func (e encodeToCurve) Sum() (x, y *big.Int) {
-	m := e.hkdf.Sum(nil)
-	u := e.hashTobase(m, ctr)
-	x, y = e.mapping(u)
-	e.clearCof(x, y)
-	return x, y
-}
+type HashToCurve struct{ *Suite }
 
-type hashToCurve struct {
-	encoding
-}
-
-func (h hashToCurve) IsRandomOracle() bool { return true }
-func (h hashToCurve) Sum() (x, y *big.Int) {
-	m := h.hkdf.Sum(nil)
-	u := h.hashTobase(m, ctr)
-	x, y = h.mapping(u)
-	h.clearCof(x, y)
-	return x, y
+func (s *HashToCurve) IsRandomOracle() bool { return true }
+func (s *HashToCurve) Hash(in, dst []byte) C.Point {
+	u0 := GF.HashToField(in, dst, byte(0), s.HFunc, s.E.Field(), s.L)
+	u1 := GF.HashToField(in, dst, byte(1), s.HFunc, s.E.Field(), s.L)
+	Q0 := s.MapToCurve(u0)
+	Q1 := s.MapToCurve(u1)
+	R := s.E.Add(Q0, Q1)
+	P := s.E.ClearCofactor(R)
+	return P
 }

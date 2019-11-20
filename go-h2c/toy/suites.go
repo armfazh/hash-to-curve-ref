@@ -6,15 +6,17 @@ import (
 	"hash"
 	"strings"
 
+	"github.com/armfazh/hash-to-curve-ref/go-h2c"
+	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/bf"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/ell2"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswu"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswuAB0"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/svdw"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/suite"
 )
 
-var ToySuites map[string]suite.HashToPoint
+var ToySuites map[string]h2c.HashToPoint
 
 func init() {
 	initCurves()
@@ -22,9 +24,10 @@ func init() {
 }
 
 func initSuites() {
-	ToySuites = make(map[string]suite.HashToPoint)
-	RegisterToySuite("W0-SHA256-SSWU-NU-")
-	RegisterToySuite("W0-SHA256-SSWU-RO-")
+	ToySuites = make(map[string]h2c.HashToPoint)
+	// TODO
+	// RegisterToySuite("W0-SHA256-SSWU-NU-")
+	// RegisterToySuite("W0-SHA256-SSWU-RO-")
 }
 
 func RegisterToySuite(suiteID string) {
@@ -46,26 +49,30 @@ func RegisterToySuite(suiteID string) {
 	default:
 		panic("not supported")
 	}
+	var Z GF.Elt       // TBD
+	var sgn0 GF.Sgn0ID // TBD
+	var l uint = 16    // TBD
 	var mm mapping.Map
 	switch v[2] {
 	case "SVDW":
-		mm = svdw.New(ecc.E, ecc.Z, ecc.Sgn0)
+		mm = svdw.New(ecc.E, Z, sgn0)
 	case "SSWU":
-		mm = sswu.New(ecc.E, ecc.Z, ecc.Sgn0)
+		mm = sswu.New(ecc.E, Z, sgn0)
 	case "SSWUAB0":
-		mm = sswuAB0.New(ecc.E, ecc.Z, ecc.Sgn0, ecc.Iso)
+		mm = sswuAB0.New(ecc.E, Z, sgn0, ecc.Iso)
 	case "ELL2":
-		mm = ell2.New(ecc.E, ecc.Z, ecc.Sgn0)
+		mm = ell2.New(ecc.E, Z, sgn0)
+	case "BF":
+		mm = bf.New(ecc.E)
 	}
-	l := uint(16)
-	s := &suite.Suite{E: ecc.E, L: l, HFunc: h, Map: mm}
-	var h2p suite.HashToPoint
+	s := &h2c.Suite{E: ecc.E, L: l, HFunc: h, Map: mm}
+	var h2p h2c.HashToPoint
 
 	switch v[3] {
 	case "NU":
-		h2p = &suite.EncodeToCurve{Suite: s}
+		h2p = &h2c.EncodeToCurve{Suite: s}
 	case "RO":
-		h2p = &suite.HashToCurve{Suite: s}
+		h2p = &h2c.HashToCurve{Suite: s}
 	default:
 		panic("wrong suiteID")
 	}

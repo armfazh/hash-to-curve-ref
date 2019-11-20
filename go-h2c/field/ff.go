@@ -26,6 +26,7 @@ type Field interface {
 	hasSgn0
 	hasInv0
 	hasSqrt
+	hasExp
 }
 
 type hasPredicates interface {
@@ -43,6 +44,7 @@ type hasArith interface {
 	Inv(x Elt) Elt
 }
 
+type hasExp interface{ Exp(Elt, *big.Int) Elt }
 type hasCMov interface{ CMov(x, y Elt, b bool) Elt }
 type hasInv0 interface{ Inv0(Elt) Elt }
 type hasSqrt interface{ Sqrt(Elt) Elt }

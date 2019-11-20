@@ -45,7 +45,7 @@ func (f fp2) Elt(in interface{}) Elt {
 	}
 	return f.mod(a, b)
 }
-func (f fp2) P() *big.Int     { return f.p }
+func (f fp2) P() *big.Int     { return new(big.Int).Set(f.p) }
 func (f fp2) Order() *big.Int { return new(big.Int).Mul(f.p, f.p) }
 func (f fp2) String() string  { return "GF(" + f.name + ") Irred: i^2+1" }
 func (f fp2) Ext() uint       { return uint(2) }
@@ -82,12 +82,13 @@ func (f fp2) Sub(x, y Elt) Elt {
 	return fp2Elt{a, b}
 }
 
-func (f fp2) Mul(x, y Elt) Elt    { return nil }
-func (f fp2) Sqr(x Elt) Elt       { return nil }
-func (f fp2) Inv(x Elt) Elt       { return nil }
-func (f fp2) Neg(x Elt) Elt       { return nil }
-func (f fp2) Sqrt(x Elt) Elt      { return nil }
-func (f fp2) IsSquare(x Elt) bool { return false }
+func (f fp2) Mul(x, y Elt) Elt          { return nil }
+func (f fp2) Sqr(x Elt) Elt             { return nil }
+func (f fp2) Inv(x Elt) Elt             { return nil }
+func (f fp2) Neg(x Elt) Elt             { return nil }
+func (f fp2) Sqrt(x Elt) Elt            { return nil }
+func (f fp2) Exp(x Elt, e *big.Int) Elt { return nil }
+func (f fp2) IsSquare(x Elt) bool       { return false }
 
 func (f fp2) Inv0(x Elt) Elt { return f.Inv(x) }
 func (f fp2) CMov(x, y Elt, b bool) Elt {
