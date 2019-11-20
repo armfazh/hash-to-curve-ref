@@ -9,7 +9,7 @@ import (
 )
 
 type svdw struct {
-	E              C.WECurve
+	E              C.W
 	Z              GF.Elt
 	c1, c2, c3, c4 GF.Elt
 	Sgn0           func(GF.Elt) int
@@ -18,22 +18,17 @@ type svdw struct {
 func (m svdw) String() string { return fmt.Sprintf("SVDW for E: %v", m.E) }
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
-	if s := (&svdw{E: e.(C.WECurve), Z: z}); s.verify() {
+func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) M.Map {
+	if s := (&svdw{E: e.(C.W), Z: z}); s.verify() {
 		s.precmp(sgn0)
 		return s
 	}
 	panic(fmt.Errorf("Failed restrictions for svdw"))
 }
 
-func (m *svdw) precmp(sgn0 string) {
+func (m *svdw) precmp(sgn0 GF.Sgn0ID) {
 	F := m.E.F
-	switch sgn0 {
-	case "le":
-		m.Sgn0 = F.Sgn0LE
-	case "be":
-		m.Sgn0 = F.Sgn0BE
-	}
+	m.Sgn0 = F.GetSgn0(sgn0)
 	var t0, t1 GF.Elt
 	m.c1 = m.E.EvalRHS(m.Z)  // g(Z)
 	t0 = F.Inv(F.Elt(2))     // 1/2
@@ -58,7 +53,7 @@ func (m *svdw) precmp(sgn0 string) {
 	m.c4 = F.Add(t0, t0) // -4g(Z)/(3Z^2+4A)
 }
 
-func (m svdw) verify() bool {
+func (m *svdw) verify() bool {
 	F := m.E.F
 	var t0, t1, t2 GF.Elt
 	gz := m.E.EvalRHS(m.Z)
@@ -82,10 +77,15 @@ func (m svdw) verify() bool {
 	cond3 := F.IsSquare(t0)
 	cond4 := F.IsSquare(gz)
 	cond5 := F.IsSquare(gz2)
+	fmt.Printf("cond1: %v\n", cond1)
+	fmt.Printf("cond2: %v\n", cond2)
+	fmt.Printf("cond3: %v\n", cond3)
+	fmt.Printf("cond4: %v\n", cond4)
+	fmt.Printf("cond5: %v\n", cond5)
 	return cond1 && cond2 && cond3 && (cond4 || cond5)
 }
 
-func (m *svdw) Map(u GF.Elt) C.Point {
+func (m *svdw) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1, t2, t3, t4 GF.Elt
 	var x1, x2, x3, gx1, gx2, gx, x, y GF.Elt

@@ -9,10 +9,8 @@ import (
 
 func TestCurves(t *testing.T) {
 	for name, EC := range toy.ToyCurves {
-		E := EC.E
-		P := EC.P
 		t.Run(name, func(t *testing.T) {
-			testAdd(t, E, P)
+			testAdd(t, EC.E, EC.P)
 		})
 	}
 }

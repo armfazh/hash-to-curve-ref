@@ -1,23 +1,44 @@
 package curve
 
 import (
+	"errors"
 	"fmt"
+	"math/big"
 
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-type ecTe struct{ *Params }
-
 // TECurve is a twisted Edwards curve
-type TECurve = *ecTe
+type TECurve struct{ *params }
 
-// NewEdwards returns a twisted Edwards curve
-func NewEdwards(ecParams *Params) EllCurve { return &ecTe{ecParams} }
+type T = *TECurve
 
-func (e *ecTe) String() string {
+func (e *TECurve) String() string {
 	return fmt.Sprintf("Ax^2+y^2=1+Dx^2y^2\nF: %v\nA: %v\nD: %v\n", e.F, e.A, e.D)
 }
-func (e *ecTe) IsOnCurve(p Point) bool {
+
+// NewEdwards returns a twisted Edwards curve
+func NewEdwards(f GF.Field, a, d GF.Elt, r, h *big.Int) *TECurve {
+	if e := (&TECurve{&params{
+		F: f, A: a, D: d, R: r, H: h,
+	}}); !f.IsZero(e.Discriminant()) {
+		return e
+	}
+	panic(errors.New("can't instantiate a twisted Edwards curve"))
+}
+
+func (e *TECurve) NewPoint(x, y GF.Elt) (P Point) {
+	if P = (&ptTe{e, &afPoint{x: x, y: y}}); e.IsOnCurve(P) {
+		return P
+	}
+	panic(fmt.Errorf("p:%v not on curve", P))
+}
+func (e *TECurve) Discriminant() GF.Elt {
+	F := e.F
+	t0 := F.Sqr(e.A) // A^2
+	return t0
+}
+func (e *TECurve) IsOnCurve(p Point) bool {
 	P := p.(*ptTe)
 	F := e.F
 	var t0, t1, t2 GF.Elt
@@ -30,10 +51,8 @@ func (e *ecTe) IsOnCurve(p Point) bool {
 	t0 = F.Add(t0, t1)      // Ax^2+y^2
 	return F.AreEqual(t0, t2)
 }
-
-func (e *ecTe) NewPoint(x, y GF.Elt) Point { return &ptTe{e, &afPoint{x: x, y: y}} }
-func (e *ecTe) Identity() Point            { return e.NewPoint(e.F.Zero(), e.F.One()) }
-func (e *ecTe) Add(p, q Point) Point {
+func (e *TECurve) Identity() Point { return e.NewPoint(e.F.Zero(), e.F.One()) }
+func (e *TECurve) Add(p, q Point) Point {
 	P := p.(*ptTe)
 	Q := q.(*ptTe)
 	F := e.F
@@ -61,22 +80,26 @@ func (e *ecTe) Add(p, q Point) Point {
 
 	return &ptTe{e, &afPoint{x: x, y: y}}
 }
-func (e *ecTe) Double(p Point) Point { return e.Add(p, p) }
-func (e *ecTe) Neg(p Point) Point {
+func (e *TECurve) Neg(p Point) Point {
 	P := p.(*ptTe)
 	return &ptTe{e, &afPoint{x: e.F.Neg(P.x), y: P.y.Copy()}}
 }
+func (e *TECurve) Double(p Point) Point { return e.Add(p, p) }
+
+func (e *TECurve) ClearCofactor(p Point) Point {
+	return p
+}
 
 type ptTe struct {
-	*ecTe
+	*TECurve
 	*afPoint
 }
 
 func (p *ptTe) String() string { return p.afPoint.String() }
-func (p *ptTe) Copy() Point    { return &ptTe{p.ecTe, p.copy()} }
+func (p *ptTe) Copy() Point    { return &ptTe{p.TECurve, p.copy()} }
 func (p *ptTe) IsEqual(q Point) bool {
 	qq := q.(*ptTe)
-	return p.ecTe == qq.ecTe && p.isEqual(p.F, qq.afPoint)
+	return p.TECurve == qq.TECurve && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptTe) IsIdentity() bool {
 	return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.One())

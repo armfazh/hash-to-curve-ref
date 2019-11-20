@@ -21,11 +21,10 @@ func TestSqrt(t *testing.T) {
 
 func testSqrt(t *testing.T, p int) {
 	F := GF.NewFp(fmt.Sprintf("p%v", p), p)
-	do := F.(GF.HasSqrt)
 	for i := 0; i < p; i++ {
 		x := F.Elt(i)
 		if F.IsSquare(x) {
-			y := do.Sqrt(x)
+			y := F.Sqrt(x)
 			got := F.Sqr(y)
 			want := x
 			if !F.AreEqual(got, want) {

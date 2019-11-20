@@ -1,16 +1,54 @@
 package curve
 
 import (
+	"errors"
+	"fmt"
+	"math/big"
+
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-type ecWe struct{ *Params }
+// WECurve is a Weierstrass curve
+type WECurve struct{ *params }
 
-// Curve is a Weierstrass curve
-type WECurve = *ecWe
+type W = *WECurve
 
-func (e *ecWe) String() string { return "y^2=x^3+Ax+B\n" + e.Params.String() }
-func (e *ecWe) IsOnCurve(p Point) bool {
+func (e *WECurve) String() string { return "y^2=x^3+Ax+B\n" + e.params.String() }
+
+// NewWeierstrass returns a Weierstrass curve
+func NewWeierstrass(f GF.Field, a, b GF.Elt, r, h *big.Int) *WECurve {
+	if e := (&WECurve{&params{
+		F: f, A: a, B: b, R: r, H: h,
+	}}); !f.IsZero(e.Discriminant()) {
+		return e
+	}
+	panic(errors.New("can't instantiate a weierstrass curve"))
+}
+
+// NewPoint generates
+func (e *WECurve) NewPoint(x, y GF.Elt) (P Point) {
+	if P = (&ptWe{e, &afPoint{x: x, y: y}}); e.IsOnCurve(P) {
+		return P
+	}
+	panic(fmt.Errorf("p:%v not on curve", P))
+}
+func (e *WECurve) Discriminant() GF.Elt {
+	F := e.F
+	t0 := F.Sqr(e.A)          // A^2
+	t0 = F.Mul(t0, e.A)       // A^3
+	t0 = F.Add(t0, t0)        // 2A^3
+	t0 = F.Add(t0, t0)        // 4A^3
+	t1 := F.Sqr(e.B)          // B^3
+	t1 = F.Mul(t1, F.Elt(27)) // 27B^2
+	t0 = F.Add(t0, t1)        // 4A^3+27B^2
+	t0 = F.Add(t0, t0)        // 2(4A^3+27B^2)
+	t0 = F.Add(t0, t0)        // 4(4A^3+27B^2)
+	t0 = F.Add(t0, t0)        // 8(4A^3+27B^2)
+	t0 = F.Add(t0, t0)        // 16(4A^3+27B^2)
+	t0 = F.Neg(t0)            // -16(4A^3+27B^2)
+	return t0
+}
+func (e *WECurve) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
 		return isZero
 	}
@@ -20,21 +58,15 @@ func (e *ecWe) IsOnCurve(p Point) bool {
 	t1 := F.Sqr(P.y) // y^2
 	return F.AreEqual(t0, t1)
 }
-
-func (e *ecWe) EvalRHS(x GF.Elt) GF.Elt {
+func (e *WECurve) EvalRHS(x GF.Elt) GF.Elt {
 	F := e.F
 	t0 := F.Sqr(x)        // x^2
 	t0 = F.Add(t0, e.A)   // x^2+A
 	t0 = F.Mul(t0, x)     // (x^2+A)x
 	return F.Add(t0, e.B) // (x^2+A)x+B
 }
-
-// NewWeierstrass returns a Weierstrass curve
-func NewWeierstrass(ecParams *Params) EllCurve { return &ecWe{ecParams} }
-
-func (e *ecWe) NewPoint(x, y GF.Elt) Point { return &ptWe{e, &afPoint{x: x, y: y}} }
-func (e *ecWe) Identity() Point            { return &infPoint{} }
-func (e *ecWe) Add(p, q Point) Point {
+func (e *WECurve) Identity() Point { return &infPoint{} }
+func (e *WECurve) Add(p, q Point) Point {
 	if p.IsIdentity() {
 		return q.Copy()
 	} else if q.IsIdentity() {
@@ -47,14 +79,14 @@ func (e *ecWe) Add(p, q Point) Point {
 		return e.add(p, q)
 	}
 }
-func (e *ecWe) Neg(p Point) Point {
+func (e *WECurve) Neg(p Point) Point {
 	if _, isZero := p.(*infPoint); isZero {
 		return e.Identity()
 	}
 	P := p.(*ptWe)
 	return &ptWe{e, &afPoint{x: P.x.Copy(), y: e.F.Neg(P.y)}}
 }
-func (e *ecWe) add(p, q Point) Point {
+func (e *WECurve) add(p, q Point) Point {
 	P := p.(*ptWe)
 	Q := q.(*ptWe)
 	F := e.F
@@ -79,7 +111,7 @@ func (e *ecWe) add(p, q Point) Point {
 
 	return &ptWe{e, &afPoint{x: x, y: y}}
 }
-func (e *ecWe) Double(p Point) Point {
+func (e *WECurve) Double(p Point) Point {
 	if _, ok := p.(*infPoint); ok {
 		return e.Identity()
 	}
@@ -107,18 +139,21 @@ func (e *ecWe) Double(p Point) Point {
 
 	return &ptWe{e, &afPoint{x: x, y: y}}
 }
+func (e *WECurve) ClearCofactor(p Point) Point {
+	return p
+}
 
-// ptWe is an affine point on a Weierstrass curve.
+// ptWe is an affine point on a WECurve curve.
 type ptWe struct {
-	*ecWe
+	*WECurve
 	*afPoint
 }
 
 func (p *ptWe) String() string { return p.afPoint.String() }
-func (p *ptWe) Copy() Point    { return &ptWe{p.ecWe, p.copy()} }
+func (p *ptWe) Copy() Point    { return &ptWe{p.WECurve, p.copy()} }
 func (p *ptWe) IsEqual(q Point) bool {
 	qq := q.(*ptWe)
-	return p.ecWe == qq.ecWe && p.isEqual(p.F, qq.afPoint)
+	return p.WECurve == qq.WECurve && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptWe) IsIdentity() bool   { return false }
 func (p *ptWe) IsTwoTorsion() bool { return p.F.IsZero(p.y) }

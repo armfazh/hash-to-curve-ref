@@ -5,7 +5,7 @@ import (
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-// MapToCurve is
-type MapToCurve interface {
-	Map(field.Elt) curve.Point
+// Map is
+type Map interface {
+	MapToCurve(field.Elt) curve.Point
 }

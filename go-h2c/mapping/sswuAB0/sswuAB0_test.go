@@ -10,18 +10,18 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	trivialIso := func(p C.Point) C.Point { return p }
-	iso := C.NewIsogeny(
-		toy.ToyCurves["W1iso"].E,
-		toy.ToyCurves["W1iso"].E,
-		uint(1), trivialIso)
-	E := iso.Codomain()
+	trivialMap := func(e0, e1 C.EllCurve, p C.Point) C.Point { return p }
+	isogeny := &C.Isogeny{
+		E0:  toy.ToyCurves["W1iso"].E,
+		E1:  toy.ToyCurves["W1iso"].E,
+		Map: trivialMap}
+	E := isogeny.Codomain()
 	F := E.Field()
 	n := F.Order().Int64()
 	Z := F.Elt(3)
 	for _, m := range []mapping.MapToCurve{
-		sswuAB0.New(E, Z, "be", iso),
-		sswuAB0.New(E, Z, "le", iso),
+		sswuAB0.New(E, Z, "be", isogeny),
+		sswuAB0.New(E, Z, "le", isogeny),
 	} {
 		for i := int64(0); i < n; i++ {
 			u := F.Elt(i)
@@ -31,5 +31,4 @@ func TestMap(t *testing.T) {
 			}
 		}
 	}
-
 }

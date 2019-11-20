@@ -101,6 +101,15 @@ func (f fp2) CMov(x, y Elt, b bool) Elt {
 	}
 	return &fp2Elt{&za, &zb}
 }
+func (f fp2) GetSgn0(id Sgn0ID) func(Elt) int {
+	if id == SignBE {
+		return f.Sgn0BE
+	}
+	if id == SignLE {
+		return f.Sgn0LE
+	}
+	panic("Wrong signID")
+}
 func (f fp2) Sgn0BE(x Elt) int {
 	/* [TODO] */
 	sb := x.(*fp2Elt).b.Sign()

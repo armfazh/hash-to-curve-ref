@@ -9,7 +9,7 @@ import (
 )
 
 type sswu struct {
-	E      C.WECurve
+	E      C.W
 	Z      GF.Elt
 	c1, c2 GF.Elt
 	Sgn0   func(GF.Elt) int
@@ -18,22 +18,17 @@ type sswu struct {
 func (m sswu) String() string { return fmt.Sprintf("Simple SWU for E: %v", m.E) }
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 string) M.MapToCurve {
-	if s := (&sswu{E: e.(C.WECurve), Z: z}); s.verify() {
+func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) M.Map {
+	if s := (&sswu{E: e.(C.W), Z: z}); s.verify() {
 		s.precmp(sgn0)
 		return s
 	}
 	panic(fmt.Errorf("Failed restrictions for sswu"))
 }
 
-func (m *sswu) precmp(sgn0 string) {
+func (m *sswu) precmp(sgn0 GF.Sgn0ID) {
 	F := m.E.F
-	switch sgn0 {
-	case "le":
-		m.Sgn0 = F.Sgn0LE
-	case "be":
-		m.Sgn0 = F.Sgn0BE
-	}
+	m.Sgn0 = F.GetSgn0(sgn0)
 
 	t0 := F.Inv(m.E.A)    // 1/A
 	t0 = F.Mul(t0, m.E.B) // B/A
@@ -42,7 +37,7 @@ func (m *sswu) precmp(sgn0 string) {
 	m.c2 = F.Neg(t0)      // -1/Z
 }
 
-func (m sswu) verify() bool {
+func (m *sswu) verify() bool {
 	F := m.E.F
 	precond1 := !F.IsZero(m.E.A)         // A != 0
 	precond2 := !F.IsZero(m.E.B)         // B != 0
@@ -56,7 +51,7 @@ func (m sswu) verify() bool {
 	return precond1 && precond2 && cond1 && cond2 && cond4
 }
 
-func (m *sswu) Map(u GF.Elt) C.Point {
+func (m *sswu) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1, t2 GF.Elt
 	var x1, x2, gx1, gx2, y2, x, y GF.Elt

@@ -46,7 +46,13 @@ type hasArith interface {
 type hasCMov interface{ CMov(x, y Elt, b bool) Elt }
 type hasInv0 interface{ Inv0(Elt) Elt }
 type hasSqrt interface{ Sqrt(Elt) Elt }
-type hasSgn0 interface {
-	Sgn0BE(Elt) int
-	Sgn0LE(Elt) int
-}
+type hasSgn0 interface{ GetSgn0(Sgn0ID) func(Elt) int }
+
+type Sgn0ID int
+
+const (
+	// SignLE is
+	SignLE Sgn0ID = iota
+	// SignBE is
+	SignBE
+)
