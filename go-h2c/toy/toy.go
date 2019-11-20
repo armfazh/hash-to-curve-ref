@@ -20,7 +20,8 @@ var ToyCurves map[string]EC
 func initCurves() {
 	ToyCurves = make(map[string]EC)
 
-	var f53 = GF.NewFp("p53", 53)
+	var f53 = GF.NewFp("p53", 53) // 1mod4, 2mod3
+	var f59 = GF.NewFp("p59", 59) // 3mod4, 2mod3
 
 	RegisterToyCurve("W0",
 		C.NewWeierstrass(f53, f53.Elt(3), f53.Elt(2), big.NewInt(51), big.NewInt(3)),
@@ -45,6 +46,10 @@ func initCurves() {
 	RegisterToyCurve("M1",
 		C.NewMontgomery(f53, f53.Elt(3), f53.Elt(1), big.NewInt(48), big.NewInt(4)),
 		f53.Elt(14), f53.Elt(22))
+
+	RegisterToyCurve("M2",
+		C.NewMontgomery(f59, f59.Zero(), f59.Elt(16), big.NewInt(60), big.NewInt(4)),
+		f59.Elt(31), f59.Elt(36))
 
 	RegisterToyCurve("E0",
 		C.NewEdwards(f53, f53.Elt(1), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
