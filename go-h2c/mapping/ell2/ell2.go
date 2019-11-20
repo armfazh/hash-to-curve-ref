@@ -26,16 +26,11 @@ func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) M.Map {
 	panic(fmt.Errorf("Failed restrictions for ell2"))
 }
 
-func (m ell2) verify() bool {
+func (m *ell2) verify() bool {
 	F := m.E.F
 	precond1 := !F.IsZero(m.E.A) // A != 0
 	precond2 := !F.IsZero(m.E.B) // B != 0
 	cond1 := !F.IsSquare(m.Z)    // Z is non-square
-
-	T := m.E.NewPoint(F.Elt(0), F.Elt(0))
-	fmt.Println(T)
-	Q := m.E.Double(T)
-	fmt.Println(Q)
 
 	return precond1 && precond2 && cond1
 }
@@ -50,7 +45,7 @@ func (m *ell2) precmp(sgn0 GF.Sgn0ID) {
 	m.BB = F.Sqr(t0)        // 1/B^2
 }
 
-func (m ell2) MapToCurve(u GF.Elt) C.Point {
+func (m *ell2) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1 GF.Elt
 	var x1, x2, gx1, gx2, y2, x, y GF.Elt
@@ -74,7 +69,7 @@ func (m ell2) MapToCurve(u GF.Elt) C.Point {
 	y = F.Sqrt(y2)                 // 17.   y = sqrt(y2)
 	e3 = m.Sgn0(u) == m.Sgn0(y)    // 18.  e3 = sgn0(u) == sgn0(y)  // Fix sign of y
 	y = F.CMov(F.Neg(y), y, e3)    // 19.   y = CMOV(-y, y, e3)
-	x = F.Mul(x, m.BB)
-	y = F.Mul(y, m.BB)
+	x = F.Mul(x, m.E.B)
+	y = F.Mul(y, m.E.B)
 	return m.E.NewPoint(x, y)
 }

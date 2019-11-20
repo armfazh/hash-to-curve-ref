@@ -19,7 +19,7 @@ func (e *MTCurve) String() string { return "By^2=x^3+Ax^2+x\n" + e.params.String
 func NewMontgomery(f GF.Field, a, b GF.Elt, r, h *big.Int) *MTCurve {
 	if e := (&MTCurve{&params{
 		F: f, A: a, B: b, R: r, H: h,
-	}}); !f.IsZero(e.Discriminant()) {
+	}}); e.IsValid() {
 		return e
 	}
 	panic(errors.New("can't instantiate a Montgomery curve"))
@@ -31,21 +31,12 @@ func (e *MTCurve) NewPoint(x, y GF.Elt) (P Point) {
 	}
 	panic(fmt.Errorf("p:%v not on curve", P))
 }
-func (e *MTCurve) Discriminant() GF.Elt {
+func (e *MTCurve) IsValid() bool {
 	F := e.F
-	t0 := F.Sqr(e.A)          // A^2
-	t0 = F.Mul(t0, e.A)       // A^3
-	t0 = F.Add(t0, t0)        // 2A^3
-	t0 = F.Add(t0, t0)        // 4A^3
-	t1 := F.Sqr(e.B)          // B^3
-	t1 = F.Mul(t1, F.Elt(27)) // 27B^2
-	t0 = F.Add(t0, t1)        // 4A^3+27B^2
-	t0 = F.Add(t0, t0)        // 2(4A^3+27B^2)
-	t0 = F.Add(t0, t0)        // 4(4A^3+27B^2)
-	t0 = F.Add(t0, t0)        // 8(4A^3+27B^2)
-	t0 = F.Add(t0, t0)        // 16(4A^3+27B^2)
-	t0 = F.Neg(t0)            // -16(4A^3+27B^2)
-	return t0
+	t0 := F.Sqr(e.A)         // A^2
+	t0 = F.Sub(t0, F.Elt(4)) // A^2-4
+	t0 = F.Mul(t0, e.B)      // B(A^2-4)
+	return !F.IsZero(t0)     // B(A^2-4) != 0
 }
 func (e *MTCurve) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {

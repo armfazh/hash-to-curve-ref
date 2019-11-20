@@ -21,7 +21,7 @@ func (e *TECurve) String() string {
 func NewEdwards(f GF.Field, a, d GF.Elt, r, h *big.Int) *TECurve {
 	if e := (&TECurve{&params{
 		F: f, A: a, D: d, R: r, H: h,
-	}}); !f.IsZero(e.Discriminant()) {
+	}}); e.IsValid() {
 		return e
 	}
 	panic(errors.New("can't instantiate a twisted Edwards curve"))
@@ -33,10 +33,16 @@ func (e *TECurve) NewPoint(x, y GF.Elt) (P Point) {
 	}
 	panic(fmt.Errorf("p:%v not on curve", P))
 }
-func (e *TECurve) Discriminant() GF.Elt {
+func (e *TECurve) IsValid() bool {
 	F := e.F
-	t0 := F.Sqr(e.A) // A^2
-	return t0
+	cond1 := !F.AreEqual(e.A, e.D) // A != D
+	cond2 := !F.IsZero(e.A)        // A != 0
+	cond3 := !F.IsZero(e.D)        // D != 0
+	return cond1 && cond2 && cond3
+}
+func (e *TECurve) IsComplete() bool {
+	F := e.F
+	return F.IsSquare(e.A) && !F.IsSquare(e.D) // A != D
 }
 func (e *TECurve) IsOnCurve(p Point) bool {
 	P := p.(*ptTe)

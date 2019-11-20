@@ -25,8 +25,6 @@ func initSuites() {
 	ToySuites = make(map[string]suite.HashToPoint)
 	RegisterToySuite("W0-SHA256-SSWU-NU-")
 	RegisterToySuite("W0-SHA256-SSWU-RO-")
-	RegisterToySuite("W0-SHA512-SVDW-NU-")
-	RegisterToySuite("W0-SHA512-SVDW-RO-")
 }
 
 func RegisterToySuite(suiteID string) {

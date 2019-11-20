@@ -19,7 +19,7 @@ func (e *WECurve) String() string { return "y^2=x^3+Ax+B\n" + e.params.String() 
 func NewWeierstrass(f GF.Field, a, b GF.Elt, r, h *big.Int) *WECurve {
 	if e := (&WECurve{&params{
 		F: f, A: a, B: b, R: r, H: h,
-	}}); !f.IsZero(e.Discriminant()) {
+	}}); e.IsValid() {
 		return e
 	}
 	panic(errors.New("can't instantiate a weierstrass curve"))
@@ -32,7 +32,7 @@ func (e *WECurve) NewPoint(x, y GF.Elt) (P Point) {
 	}
 	panic(fmt.Errorf("p:%v not on curve", P))
 }
-func (e *WECurve) Discriminant() GF.Elt {
+func (e *WECurve) IsValid() bool {
 	F := e.F
 	t0 := F.Sqr(e.A)          // A^2
 	t0 = F.Mul(t0, e.A)       // A^3
@@ -46,7 +46,7 @@ func (e *WECurve) Discriminant() GF.Elt {
 	t0 = F.Add(t0, t0)        // 8(4A^3+27B^2)
 	t0 = F.Add(t0, t0)        // 16(4A^3+27B^2)
 	t0 = F.Neg(t0)            // -16(4A^3+27B^2)
-	return t0
+	return !F.IsZero(t0)      // -16(4A^3+27B^2) != 0
 }
 func (e *WECurve) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
