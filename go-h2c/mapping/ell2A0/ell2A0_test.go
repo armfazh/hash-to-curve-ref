@@ -10,7 +10,7 @@ import (
 )
 
 var curves = []string{
-	"M2",
+	"W3",
 }
 
 func TestMap(t *testing.T) {

@@ -39,6 +39,10 @@ func initCurves() {
 		C.NewWeierstrass(f53, f53.Zero(), f53.Elt(2), big.NewInt(51), big.NewInt(3)),
 		f53.Elt(37), f53.Elt(27))
 
+	RegisterToyCurve("W3",
+		C.NewWeierstrass(f59, f59.Elt(16), f59.Zero(), big.NewInt(60), big.NewInt(4)),
+		f59.Elt(33), f59.Elt(11))
+
 	RegisterToyCurve("M0",
 		C.NewMontgomery(f53, f53.Elt(4), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
 		f53.Elt(16), f53.Elt(4))
@@ -46,10 +50,6 @@ func initCurves() {
 	RegisterToyCurve("M1",
 		C.NewMontgomery(f53, f53.Elt(3), f53.Elt(1), big.NewInt(48), big.NewInt(4)),
 		f53.Elt(14), f53.Elt(22))
-
-	RegisterToyCurve("M2",
-		C.NewMontgomery(f59, f59.Zero(), f59.Elt(16), big.NewInt(60), big.NewInt(4)),
-		f59.Elt(31), f59.Elt(36))
 
 	RegisterToyCurve("E0",
 		C.NewEdwards(f53, f53.Elt(1), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
