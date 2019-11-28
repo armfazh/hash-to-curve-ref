@@ -22,7 +22,7 @@ func NewWeierstrass(f GF.Field, a, b GF.Elt, r, h *big.Int) *WECurve {
 	}}); e.IsValid() {
 		return e
 	}
-	panic(errors.New("can't instantiate a weierstrass curve"))
+	panic(errors.New("can't instantiate a Weierstrass curve"))
 }
 
 // NewPoint generates

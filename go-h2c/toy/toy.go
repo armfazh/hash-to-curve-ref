@@ -9,9 +9,8 @@ import (
 
 // EC is an elliptic curve
 type EC struct {
-	E   C.EllCurve
-	P   C.Point
-	Iso *C.Isogeny
+	E C.EllCurve
+	P C.Point
 }
 
 // ToyCurves is
@@ -42,6 +41,10 @@ func initCurves() {
 	RegisterToyCurve("W3",
 		C.NewWeierstrass(f59, f59.Elt(16), f59.Zero(), big.NewInt(60), big.NewInt(4)),
 		f59.Elt(33), f59.Elt(11))
+
+	RegisterToyCurve("WC0",
+		C.NewWeierstrassC(f53, f53.Elt(2), f53.Elt(3), big.NewInt(66), big.NewInt(6)),
+		f53.Elt(45), f53.Elt(4))
 
 	RegisterToyCurve("M0",
 		C.NewMontgomery(f53, f53.Elt(4), f53.Elt(3), big.NewInt(44), big.NewInt(4)),

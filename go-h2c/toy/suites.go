@@ -59,7 +59,7 @@ func RegisterToySuite(suiteID string) {
 	case "SSWU":
 		mm = sswu.New(ecc.E, Z, sgn0)
 	case "SSWUAB0":
-		mm = sswuAB0.New(ecc.E, Z, sgn0, ecc.Iso)
+		mm = sswuAB0.New(ecc.E, Z, sgn0, nil)
 	case "ELL2":
 		mm = ell2.New(ecc.E, Z, sgn0)
 	case "BF":

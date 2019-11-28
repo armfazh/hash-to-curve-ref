@@ -11,14 +11,14 @@ import (
 
 type sswuAB0 struct {
 	E   C.W
-	iso *C.Isogeny
+	iso C.RationalMap
 	mm  M.Map
 }
 
 func (m sswuAB0) String() string { return fmt.Sprintf("Simple SWU AB==0 for E: %v", m.E) }
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso *C.Isogeny) M.Map {
+func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.RationalMap) M.Map {
 	if s := (&sswuAB0{
 		E:   e.(C.W),
 		iso: iso,
@@ -35,4 +35,4 @@ func (m *sswuAB0) verify(z GF.Elt, sgn0 GF.Sgn0ID) bool {
 	return cond1 && cond2
 }
 
-func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Apply(m.mm.MapToCurve(u)) }
+func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Push(m.mm.MapToCurve(u)) }

@@ -29,6 +29,14 @@ type EllCurve interface {
 	ClearCofactor(Point) Point
 }
 
+// RationalMap is
+type RationalMap interface {
+	Domain() EllCurve
+	Codomain() EllCurve
+	Push(Point) Point
+	Pull(Point) Point
+}
+
 //
 // type Model int
 //
