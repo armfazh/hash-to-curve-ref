@@ -13,6 +13,10 @@ type EC struct {
 	P C.Point
 }
 
+func init() {
+	initCurves()
+}
+
 // ToyCurves is
 var ToyCurves map[string]EC
 
@@ -57,6 +61,10 @@ func initCurves() {
 	RegisterToyCurve("E0",
 		C.NewEdwards(f53, f53.Elt(1), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
 		f53.Elt(17), f53.Elt(49))
+
+	RegisterToyCurve("E1",
+		C.NewEdwards(f53, f53.Elt(-1), f53.Elt(12), big.NewInt(48), big.NewInt(4)),
+		f53.Elt(3), f53.Elt(19))
 
 }
 

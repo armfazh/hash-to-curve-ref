@@ -31,7 +31,7 @@ func (e *TECurve) NewPoint(x, y GF.Elt) (P Point) {
 	if P = (&ptTe{e, &afPoint{x: x, y: y}}); e.IsOnCurve(P) {
 		return P
 	}
-	panic(fmt.Errorf("p:%v not on curve", P))
+	panic(fmt.Errorf("p:%v not on %v", P, e))
 }
 func (e *TECurve) IsValid() bool {
 	F := e.F

@@ -1,11 +1,11 @@
-package ell2_test
+package elligator2_test
 
 import (
 	"testing"
 
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/ell2"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/elligator2"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
@@ -15,6 +15,7 @@ var curves = []struct {
 }{
 	{"M0", 3},
 	{"M1", 5},
+	{"E0", 2},
 }
 
 func TestMap(t *testing.T) {
@@ -24,8 +25,8 @@ func TestMap(t *testing.T) {
 		n := F.Order().Int64()
 		Z := F.Elt(id.Z)
 		for _, m := range []mapping.Map{
-			ell2.New(E, Z, GF.SignLE),
-			ell2.New(E, Z, GF.SignBE),
+			elligator2.New(E, Z, GF.SignLE, nil),
+			elligator2.New(E, Z, GF.SignBE, nil),
 		} {
 			for i := int64(0); i < n; i++ {
 				u := F.Elt(i)

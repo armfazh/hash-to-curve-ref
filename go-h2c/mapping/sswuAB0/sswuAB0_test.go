@@ -10,13 +10,16 @@ import (
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
+type trivialMap struct{ E C.EllCurve }
+
+func (t trivialMap) Domain() C.EllCurve     { return t.E }
+func (t trivialMap) Codomain() C.EllCurve   { return t.E }
+func (t trivialMap) Push(p C.Point) C.Point { return p }
+func (t trivialMap) Pull(p C.Point) C.Point { return p }
+
 func TestMap(t *testing.T) {
-	trivialMap := func(e0, e1 C.EllCurve, p C.Point) C.Point { return p }
-	isogeny := &C.Isogeny{
-		E0:  toy.ToyCurves["W1iso"].E,
-		E1:  toy.ToyCurves["W1iso"].E,
-		Map: trivialMap}
-	E := isogeny.Codomain()
+	E := toy.ToyCurves["W1iso"].E
+	isogeny := trivialMap{E}
 	F := E.Field()
 	n := F.Order().Int64()
 	Z := F.Elt(3)

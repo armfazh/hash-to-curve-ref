@@ -1,4 +1,4 @@
-package toy
+package suite
 
 import (
 	"crypto/sha256"
@@ -10,16 +10,16 @@ import (
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/bf"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/ell2"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/elligator2"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswu"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswuAB0"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/svdw"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
 var ToySuites map[string]h2c.HashToPoint
 
 func init() {
-	initCurves()
 	initSuites()
 }
 
@@ -36,7 +36,7 @@ func RegisterToySuite(suiteID string) {
 		panic("wrong suiteID")
 	}
 	curveID := v[0]
-	ecc := ToyCurves[curveID]
+	ecc := toy.ToyCurves[curveID]
 
 	var h func() hash.Hash
 	switch v[1] {
@@ -61,7 +61,7 @@ func RegisterToySuite(suiteID string) {
 	case "SSWUAB0":
 		mm = sswuAB0.New(ecc.E, Z, sgn0, nil)
 	case "ELL2":
-		mm = ell2.New(ecc.E, Z, sgn0)
+		mm = elligator2.New(ecc.E, Z, sgn0, nil)
 	case "BF":
 		mm = bf.New(ecc.E)
 	}
