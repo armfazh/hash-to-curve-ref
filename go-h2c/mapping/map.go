@@ -6,9 +6,9 @@
 //
 // If the target elliptic curve is
 // - a supersingular curve, then use either the Boneh-Franklin method
-//   (package bf) or the Elligator 2 method for A == 0 (package ell2A0);
-// - a Montgomery curve, then use the Elligator 2 (package ell2);
-// - a twisted Edwards curve, then use Elligator 2 (package edell2);
+//   (package bf) or the Elligator 2 method for A == 0 (package elligator2);
+// - a Montgomery curve, then use the Elligator 2 (package elligator2);
+// - a twisted Edwards curve, then use Elligator 2 (package elligator2);
 // - a Weierstrass curve, then use either the Simplified SWU (package sswu).
 //   But if either A or B is zero, then use the special case of Simplified SWU
 //   (package sswuAB0);
@@ -17,8 +17,8 @@
 //
 // Map is the generic interface shared by all mappings. To instantiate a mapping
 // use the New function provided in each package.
-// Note: the mappings cannot be used standalone, its usage is determined by
-// either EncodeToCurve or HashToCurve interfaces.
+// Note: the mappings must not be used standalone, since its correct usage is
+// determined by EncodeToCurve or HashToCurve high-level interfaces.
 package mapping
 
 import (

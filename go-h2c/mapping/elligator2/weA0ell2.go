@@ -1,4 +1,4 @@
-package ell2A0
+package elligator2
 
 import (
 	"fmt"
@@ -6,26 +6,16 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-type ell2A0 struct {
+type wA0ell2 struct {
 	E    C.W
 	Sgn0 func(GF.Elt) int
 }
 
-func (m ell2A0) String() string { return fmt.Sprintf("Elligator2A0 for E: %v", m.E) }
+func (m wA0ell2) String() string { return fmt.Sprintf("Elligator2A0 for E: %v", m.E) }
 
-// New is
-func New(e C.EllCurve, sgn0 GF.Sgn0ID) M.Map {
-	if s := (&ell2A0{E: e.(C.W)}); s.verify() {
-		s.precmp(sgn0)
-		return s
-	}
-	panic(fmt.Errorf("Failed restrictions for ell2A0"))
-}
-
-func (m *ell2A0) verify() bool {
+func (m *wA0ell2) verify() bool {
 	F := m.E.F
 	q := F.Order()
 	precond1 := q.Mod(q, big.NewInt(4)).Int64() == int64(3)
@@ -35,9 +25,9 @@ func (m *ell2A0) verify() bool {
 	return precond1 && precond2 && precond3
 }
 
-func (m *ell2A0) precmp(sgn0 GF.Sgn0ID) { m.Sgn0 = m.E.F.GetSgn0(sgn0) }
+func (m *wA0ell2) precmp(sgn0 GF.Sgn0ID) { m.Sgn0 = m.E.F.GetSgn0(sgn0) }
 
-func (m *ell2A0) MapToCurve(u GF.Elt) C.Point {
+func (m *wA0ell2) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F
 	var x1, x2, gx1, x, y GF.Elt
 	var e1, e2 bool

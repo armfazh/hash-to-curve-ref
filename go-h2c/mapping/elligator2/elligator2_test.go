@@ -16,6 +16,7 @@ var curves = []struct {
 	{"M0", 3},
 	{"M1", 5},
 	{"E0", 2},
+	{"W3", 2},
 }
 
 func TestMap(t *testing.T) {
