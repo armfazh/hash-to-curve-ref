@@ -35,4 +35,4 @@ func (m *sswuAB0) verify(z GF.Elt, sgn0 GF.Sgn0ID) bool {
 	return cond1 && cond2
 }
 
-func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Push(m.mm.MapToCurve(u)) }
+func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Pull(m.mm.MapToCurve(u)) }

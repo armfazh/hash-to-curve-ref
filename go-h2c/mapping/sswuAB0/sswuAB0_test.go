@@ -10,29 +10,33 @@ import (
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
-type trivialMap struct{ E C.EllCurve }
-
-func (t trivialMap) Domain() C.EllCurve     { return t.E }
-func (t trivialMap) Codomain() C.EllCurve   { return t.E }
-func (t trivialMap) Push(p C.Point) C.Point { return p }
-func (t trivialMap) Pull(p C.Point) C.Point { return p }
+var curves = []string{"W1iso"}
 
 func TestMap(t *testing.T) {
-	E := toy.ToyCurves["W1iso"].E
-	isogeny := trivialMap{E}
-	F := E.Field()
-	n := F.Order().Int64()
-	Z := F.Elt(3)
-	for _, m := range []mapping.Map{
-		sswuAB0.New(E, Z, GF.SignLE, isogeny),
-		sswuAB0.New(E, Z, GF.SignBE, isogeny),
-	} {
-		for i := int64(0); i < n; i++ {
-			u := F.Elt(i)
-			P := m.MapToCurve(u)
-			if !E.IsOnCurve(P) {
-				t.Fatalf("u: %v got P: %v\n", u, P)
+	for _, id := range curves {
+		E := toy.ToyCurves[id].E
+		isogeny := identityMap{E}
+		F := E.Field()
+		n := F.Order().Int64()
+		Z := F.Elt(3)
+		for _, m := range []mapping.Map{
+			sswuAB0.New(E, Z, GF.SignLE, isogeny),
+			sswuAB0.New(E, Z, GF.SignBE, isogeny),
+		} {
+			for i := int64(0); i < n; i++ {
+				u := F.Elt(i)
+				P := m.MapToCurve(u)
+				if !E.IsOnCurve(P) {
+					t.Fatalf("u: %v got P: %v\n", u, P)
+				}
 			}
 		}
 	}
 }
+
+type identityMap struct{ E C.EllCurve }
+
+func (t identityMap) Domain() C.EllCurve     { return t.E }
+func (t identityMap) Codomain() C.EllCurve   { return t.E }
+func (t identityMap) Push(p C.Point) C.Point { return p }
+func (t identityMap) Pull(p C.Point) C.Point { return p }
