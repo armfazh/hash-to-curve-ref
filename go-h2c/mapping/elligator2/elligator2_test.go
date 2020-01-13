@@ -9,25 +9,21 @@ import (
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
-var curves = []struct {
-	Name string
-	Z    uint
-}{
-	{"M0", 3},
-	{"M1", 5},
-	{"E0", 2},
-	{"W3", 2},
+var curves = []string{
+	"M0",
+	"M1",
+	"E0",
+	"W3",
 }
 
 func TestMap(t *testing.T) {
 	for _, id := range curves {
-		E := toy.ToyCurves[id.Name].E
+		E := toy.ToyCurves[id].E
 		F := E.Field()
 		n := F.Order().Int64()
-		Z := F.Elt(id.Z)
 		for _, m := range []mapping.Map{
-			elligator2.New(E, Z, GF.SignLE, nil),
-			elligator2.New(E, Z, GF.SignBE, nil),
+			elligator2.New(E, GF.SignLE, nil),
+			elligator2.New(E, GF.SignBE, nil),
 		} {
 			for i := int64(0); i < n; i++ {
 				u := F.Elt(i)

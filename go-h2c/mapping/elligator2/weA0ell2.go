@@ -6,6 +6,7 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type wA0ell2 struct {
@@ -15,17 +16,18 @@ type wA0ell2 struct {
 
 func (m wA0ell2) String() string { return fmt.Sprintf("Elligator2A0 for E: %v", m.E) }
 
-func (m *wA0ell2) verify() bool {
-	F := m.E.F
+func newWA0Ell2(e C.W, sgn0 GF.Sgn0ID) M.Map {
+	F := e.F
 	q := F.Order()
-	precond1 := q.Mod(q, big.NewInt(4)).Int64() == int64(3)
-	precond2 := !F.IsZero(m.E.A) // A != 0
-	precond3 := F.IsZero(m.E.B)  // B == 0
+	precond1 := q.Mod(q, big.NewInt(4)).Int64() == int64(3) // q == 3 (mod 4)
+	precond2 := !F.IsZero(e.A)                              // A != 0
+	precond3 := F.IsZero(e.B)                               // B == 0
 
-	return precond1 && precond2 && precond3
+	if precond1 && precond2 && precond3 {
+		return &wA0ell2{e, F.GetSgn0(sgn0)}
+	}
+	panic("Curve didn't match elligator2 mapping")
 }
-
-func (m *wA0ell2) precmp(sgn0 GF.Sgn0ID) { m.Sgn0 = m.E.F.GetSgn0(sgn0) }
 
 func (m *wA0ell2) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F

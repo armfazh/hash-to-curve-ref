@@ -90,6 +90,7 @@ func (f fp2) Sqrt(x Elt) Elt            { return nil }
 func (f fp2) Exp(x Elt, e *big.Int) Elt { return nil }
 func (f fp2) IsSquare(x Elt) bool       { return false }
 
+func (f fp2) Generator() Elt { return f.Elt([]string{"0", "1"}) }
 func (f fp2) Inv0(x Elt) Elt { return f.Inv(x) }
 func (f fp2) CMov(x, y Elt, b bool) Elt {
 	var za, zb big.Int

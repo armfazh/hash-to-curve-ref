@@ -37,11 +37,9 @@ type RationalMap interface {
 	Pull(Point) Point
 }
 
-//
-// type Model int
-//
-// const (
-// 	Weierstrass Model = iota
-// 	Montgomery
-// 	Edwards
-// )
+// Isogeny is
+type Isogeny interface {
+	Domain() EllCurve
+	Codomain() EllCurve
+	Push(Point) Point
+}

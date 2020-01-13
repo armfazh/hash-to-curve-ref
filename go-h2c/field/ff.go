@@ -27,6 +27,7 @@ type Field interface {
 	hasInv0
 	hasSqrt
 	hasExp
+	hasAdvanced
 }
 
 type hasPredicates interface {
@@ -49,6 +50,7 @@ type hasCMov interface{ CMov(x, y Elt, b bool) Elt }
 type hasInv0 interface{ Inv0(Elt) Elt }
 type hasSqrt interface{ Sqrt(Elt) Elt }
 type hasSgn0 interface{ GetSgn0(Sgn0ID) func(Elt) int }
+type hasAdvanced interface{ Generator() Elt }
 
 type Sgn0ID int
 

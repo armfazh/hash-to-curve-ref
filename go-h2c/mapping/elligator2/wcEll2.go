@@ -5,6 +5,7 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type wcEll2 struct {
@@ -15,16 +16,25 @@ type wcEll2 struct {
 
 func (m wcEll2) String() string { return fmt.Sprintf("Elligator2 for E: %v", m.E) }
 
-func (m *wcEll2) verify() bool {
-	F := m.E.F
-	precond1 := !F.IsZero(m.E.A) // A != 0
-	precond2 := !F.IsZero(m.E.B) // B != 0
-	cond1 := !F.IsSquare(m.Z)    // Z is non-square
-
-	return precond1 && precond2 && cond1
+func newWCEll2(e C.WC, sgn0 GF.Sgn0ID) M.Map {
+	F := e.F
+	if !F.IsZero(e.A) && !F.IsZero(e.B) { // A != 0 and  B != 0
+		return &wcEll2{e, findZ(F), F.GetSgn0(sgn0)}
+	}
+	panic("Curve didn't match elligator2 mapping")
 }
 
-func (m *wcEll2) precmp(sgn0 GF.Sgn0ID) { m.Sgn0 = m.E.F.GetSgn0(sgn0) }
+func findZ(f GF.Field) GF.Elt {
+	ctr := f.Generator()
+	for {
+		for _, z := range []GF.Elt{ctr, f.Neg(ctr)} {
+			if !f.IsSquare(z) {
+				return z
+			}
+		}
+		ctr = f.Add(ctr, f.One())
+	}
+}
 
 func (m *wcEll2) MapToCurve(u GF.Elt) C.Point {
 	F := m.E.F

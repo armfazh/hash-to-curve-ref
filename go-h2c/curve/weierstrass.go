@@ -30,7 +30,7 @@ func (e *WECurve) NewPoint(x, y GF.Elt) (P Point) {
 	if P = (&ptWe{e, &afPoint{x: x, y: y}}); e.IsOnCurve(P) {
 		return P
 	}
-	panic(fmt.Errorf("p:%v not on curve", P))
+	panic(fmt.Errorf("p=%v not on curve", P))
 }
 func (e *WECurve) IsValid() bool {
 	F := e.F

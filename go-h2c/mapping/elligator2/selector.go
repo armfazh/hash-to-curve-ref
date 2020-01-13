@@ -9,30 +9,17 @@ import (
 )
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, rat C.RationalMap) M.Map {
+func New(e C.EllCurve, sgn0 GF.Sgn0ID, rat C.RationalMap) M.Map {
 	switch curve := e.(type) {
 	case C.W:
-		if s := (&wA0ell2{E: curve}); s.verify() {
-			s.precmp(sgn0)
-			return s
-		}
+		return newWA0Ell2(curve, sgn0)
 	case C.WC:
-		if s := (&wcEll2{E: curve, Z: z}); s.verify() {
-			s.precmp(sgn0)
-			return s
-		}
+		return newWCEll2(curve, sgn0)
 	case C.T:
-		if s := (&teEll2{E: curve, rat: rat, wcEll2: wcEll2{Z: z}}); s.verify() {
-			s.precmp(sgn0)
-			return s
-		}
+		return newTEEll2(curve, sgn0, rat)
 	case C.M:
-		if s := (&mtEll2{E: curve, rat: rat, wcEll2: wcEll2{Z: z}}); s.verify() {
-			s.precmp(sgn0)
-			return s
-		}
+		return newMTEll2(curve, sgn0, rat)
 	default:
 		panic(fmt.Errorf("Curve didn't match elligator2 mapping"))
 	}
-	panic(fmt.Errorf("Failed restrictions for ell2"))
 }

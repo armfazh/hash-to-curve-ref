@@ -11,28 +11,22 @@ import (
 
 type sswuAB0 struct {
 	E   C.W
-	iso C.RationalMap
-	mm  M.Map
+	iso C.Isogeny
+	M.Map
 }
 
 func (m sswuAB0) String() string { return fmt.Sprintf("Simple SWU AB==0 for E: %v", m.E) }
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.RationalMap) M.Map {
-	if s := (&sswuAB0{
-		E:   e.(C.W),
-		iso: iso,
-	}); s.verify(z, sgn0) {
-		return s
+func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.Isogeny) M.Map {
+	E := e.(C.W)
+	F := E.F
+	cond1 := !F.IsZero(E.A)
+	cond2 := !F.IsZero(E.B)
+	if cond1 && cond2 {
+		return &sswuAB0{e.(C.W), iso, sswu.New(iso.Domain(), z, sgn0)}
 	}
 	panic(fmt.Errorf("Failed restrictions for sswuAB0"))
 }
 
-func (m *sswuAB0) verify(z GF.Elt, sgn0 GF.Sgn0ID) bool {
-	cond1 := m.E == m.iso.Codomain()
-	m.mm = sswu.New(m.iso.Domain(), z, sgn0)
-	cond2 := m.mm != nil
-	return cond1 && cond2
-}
-
-func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Pull(m.mm.MapToCurve(u)) }
+func (m *sswuAB0) MapToCurve(u GF.Elt) C.Point { return m.iso.Push(m.Map.MapToCurve(u)) }

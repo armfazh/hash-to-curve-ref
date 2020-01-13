@@ -26,8 +26,8 @@ type EncodeToCurve struct {
 	Mapping M.Map
 }
 
-func (s *EncodeToCurve) IsRandomOracle() bool { return false }
-func (s *EncodeToCurve) Hash(in, dst []byte) C.Point {
+func (s EncodeToCurve) IsRandomOracle() bool { return false }
+func (s EncodeToCurve) Hash(in, dst []byte) C.Point {
 	u := GF.HashToField(in, dst, byte(2), s.HFunc, s.E.Field(), s.L)
 	Q := s.Mapping.MapToCurve(u)
 	P := s.E.ClearCofactor(Q)
@@ -44,8 +44,8 @@ type HashToCurve struct {
 	Mapping M.Map
 }
 
-func (s *HashToCurve) IsRandomOracle() bool { return true }
-func (s *HashToCurve) Hash(in, dst []byte) C.Point {
+func (s HashToCurve) IsRandomOracle() bool { return true }
+func (s HashToCurve) Hash(in, dst []byte) C.Point {
 	u0 := GF.HashToField(in, dst, byte(0), s.HFunc, s.E.Field(), s.L)
 	u1 := GF.HashToField(in, dst, byte(1), s.HFunc, s.E.Field(), s.L)
 	Q0 := s.Mapping.MapToCurve(u0)

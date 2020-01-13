@@ -18,18 +18,55 @@ type svdw struct {
 func (m svdw) String() string { return fmt.Sprintf("SVDW for E: %v", m.E) }
 
 // New is
-func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) M.Map {
-	if s := (&svdw{E: e.(C.W), Z: z}); s.verify() {
-		s.precmp(sgn0)
-		return s
-	}
-	panic(fmt.Errorf("Failed restrictions for svdw"))
+func New(e C.EllCurve, sgn0 GF.Sgn0ID) M.Map {
+	curve := e.(C.W)
+	s := &svdw{E: curve, Sgn0: curve.F.GetSgn0(sgn0)}
+	s.precmp()
+	return s
 }
 
-func (m *svdw) precmp(sgn0 GF.Sgn0ID) {
+func (m *svdw) findZ() {
 	F := m.E.F
-	m.Sgn0 = F.GetSgn0(sgn0)
+	_Half := F.Inv(F.Neg(F.Elt(2))) // -1/2
+	ctr := F.Generator()
+	for {
+		for _, z := range []GF.Elt{ctr, F.Neg(ctr)} {
+			g2 := m.E.EvalRHS(F.Mul(z, _Half)) // g(-z/2)
+			gz := m.E.EvalRHS(z)               // g(z)
+			hz := m.polyHx(z)                  // h(z)
+			cond1 := !F.IsZero(gz)
+			cond2 := !F.IsZero(hz)
+			cond3 := F.IsSquare(hz)
+			cond4 := F.IsSquare(gz)
+			cond5 := F.IsSquare(g2)
+			if cond1 && cond2 && cond3 && (cond4 || cond5) {
+				m.Z = z
+				return
+			}
+		}
+		ctr = F.Add(ctr, F.One())
+	}
+}
+
+func (m *svdw) polyHx(x GF.Elt) GF.Elt {
+	var t0, t1, t2 GF.Elt
+	F := m.E.F
+	gz := m.E.EvalRHS(x)
+	t0 = F.Mul(gz, F.Elt(4))    // 4g(Z)
+	t0 = F.Inv(t0)              // 1/4g(Z)
+	t1 = F.Mul(m.E.A, F.Elt(4)) // 4A
+	t2 = F.Sqr(x)               // Z^2
+	t2 = F.Mul(t2, F.Elt(3))    // 3Z^2
+	t1 = F.Add(t1, t2)          // 3Z^2+4A
+	t1 = F.Neg(t1)              // -(3Z^2+4A)
+	t0 = F.Mul(t0, t1)          // -(3Z^2+4A)/4g(Z)
+	return t0
+}
+
+func (m *svdw) precmp() {
+	F := m.E.F
 	var t0, t1 GF.Elt
+	m.findZ()
 	m.c1 = m.E.EvalRHS(m.Z)  // g(Z)
 	t0 = F.Inv(F.Elt(2))     // 1/2
 	t0 = F.Neg(t0)           // -1/2
@@ -51,33 +88,6 @@ func (m *svdw) precmp(sgn0 GF.Sgn0ID) {
 	t0 = F.Neg(t0)       // -g(Z)/(3Z^2+4A)
 	t0 = F.Add(t0, t0)   // -2g(Z)/(3Z^2+4A)
 	m.c4 = F.Add(t0, t0) // -4g(Z)/(3Z^2+4A)
-}
-
-func (m *svdw) verify() bool {
-	F := m.E.F
-	var t0, t1, t2 GF.Elt
-	gz := m.E.EvalRHS(m.Z)
-
-	t0 = F.Mul(gz, F.Elt(4))    // 4g(z)
-	t0 = F.Inv(t0)              // 1/4g(z)
-	t1 = F.Mul(m.E.A, F.Elt(4)) // 4A
-	t2 = F.Sqr(m.Z)             // Z^2
-	t2 = F.Mul(t2, F.Elt(3))    // 3Z^2
-	t1 = F.Add(t1, t2)          // 3Z^2+4A
-	t1 = F.Neg(t1)              // -(3Z^2+4A)
-	t0 = F.Mul(t0, t1)          // -(3Z^2+4A)/4g(Z)
-
-	t1 = F.Inv(F.Elt(2)) // 1/2
-	t1 = F.Neg(t1)       // -1/2
-	t1 = F.Mul(t1, m.Z)  // -Z/2
-	gz2 := m.E.EvalRHS(t1)
-
-	cond1 := !F.IsZero(gz)
-	cond2 := !F.IsZero(t0)
-	cond3 := F.IsSquare(t0)
-	cond4 := F.IsSquare(gz)
-	cond5 := F.IsSquare(gz2)
-	return cond1 && cond2 && cond3 && (cond4 || cond5)
 }
 
 func (m *svdw) MapToCurve(u GF.Elt) C.Point {

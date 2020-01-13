@@ -5,7 +5,8 @@ import (
 	"math/big"
 )
 
-func bigFromString(s string) *big.Int {
+// BigFromString is
+func BigFromString(s string) *big.Int {
 	p := new(big.Int)
 	if _, ok := p.SetString(s, 0); !ok {
 		panic("error setting the number")
@@ -21,7 +22,7 @@ func fromType(in interface{}) *big.Int {
 	case big.Int:
 		n.Set(&s)
 	case string:
-		n = bigFromString(s)
+		n = BigFromString(s)
 	case uint:
 		n.SetUint64(uint64(s))
 	case uint8:

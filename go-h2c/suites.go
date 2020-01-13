@@ -3,16 +3,11 @@ package h2c
 import (
 	"crypto/sha256"
 	"crypto/sha512"
-	"hash"
-	"strings"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/bf"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/elligator2"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswu"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswuAB0"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/svdw"
 )
 
@@ -51,68 +46,70 @@ var suiteNames = []string{
 	"secp256k1-SHA256-SVDW-RO-",
 }
 
-func getCurve(name string) C.EllCurve {
-	var E C.EllCurve
-	switch name {
-	case "curve25519":
-	case "curve448":
-	case "P256":
-	case "P384":
-	case "P521":
-	default:
-		panic("curve not recognized")
-	}
-	return E
+var suites map[string]HashToPoint
+
+func init() {
+	suites = make(map[string]HashToPoint)
+	suitesWCurves()
+	suitesMCurves()
+	suiteSECP2556K1()
 }
 
-func getHash(name string) func() hash.Hash {
-	switch name {
-	case "SHA256":
-		return sha256.New
-	case "SHA384":
-		return sha512.New384
-	case "SHA512":
-		return sha512.New
-	default:
-		panic("not supported")
-	}
+func suitesMCurves() {
+	E := C.GetFromName("curve25519")
+	h := sha256.New
+	L := uint(128)
+	sgn0 := GF.SignLE
+	suites["curve25519-SHA256-ELL2-NU-"] = EncodeToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+	suites["curve25519-SHA256-ELL2-RO-"] = HashToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+
+	E = C.GetFromName("edwards25519")
+	suites["edwards25519-SHA256-EDELL2-NU-"] = EncodeToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+	suites["edwards25519-SHA256-EDELL2-RO-"] = HashToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+
+	E = C.GetFromName("curve448")
+	h = sha512.New
+	L = uint(224)
+	sgn0 = GF.SignLE
+	suites["curve448-SHA512-ELL2-NU-"] = EncodeToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+	suites["curve448-SHA512-ELL2-RO-"] = HashToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+
+	E = C.GetFromName("edwards448")
+	suites["edwards448-SHA512-EDELL2-NU-"] = EncodeToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
+	suites["edwards448-SHA512-EDELL2-RO-"] = HashToCurve{E, L, h, elligator2.New(E, sgn0, nil)}
 }
 
-func getMapping(curve C.EllCurve, name string) M.Map {
-	var Z GF.Elt       // TBD
-	var sgn0 GF.Sgn0ID // TBD
-	switch name {
-	case "SVDW":
-		return svdw.New(curve, Z, sgn0)
-	case "SSWU":
-		return sswu.New(curve, Z, sgn0)
-	case "SSWUAB0":
-		return sswuAB0.New(curve, Z, sgn0, nil)
-	case "ELL2":
-		return elligator2.New(curve, Z, sgn0, nil)
-	case "BF":
-		return bf.New(curve)
-	default:
-		panic("mapping not supported")
-	}
-}
+func suitesWCurves() {
+	E := C.GetFromName("P256")
+	F := E.Field()
+	h := sha256.New
+	L := uint(128)
+	Z := F.Elt(-10)
+	sgn0 := GF.SignLE
+	suites["P256-SHA256-SSWU-NU-"] = EncodeToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P256-SHA256-SSWU-RO-"] = HashToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P256-SHA256-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
+	suites["P256-SHA256-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
 
-// GetSuite returns an implementation of hash to point
-func GetSuite(suiteID string) HashToPoint {
-	v := strings.Split(suiteID, "-")
-	if len(v) != 5 {
-		panic("wrong suiteID")
-	}
-	E := getCurve(v[0])
-	h := getHash(v[1])
-	m := getMapping(E, v[2])
-	L := uint(128) //TBD
-	switch v[3] {
-	case "NU":
-		return &EncodeToCurve{E, L, h, m}
-	case "RO":
-		return &HashToCurve{E, L, h, m}
-	default:
-		panic("wrong format")
-	}
+	E = C.GetFromName("P384")
+	F = E.Field()
+	h = sha512.New384
+	L = uint(192)
+	Z = F.Elt(-12)
+	sgn0 = GF.SignLE
+	suites["P384-SHA384-SSWU-NU-"] = EncodeToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P384-SHA384-SSWU-RO-"] = HashToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P384-SHA384-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
+	suites["P384-SHA384-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
+
+	E = C.GetFromName("P521")
+	F = E.Field()
+	h = sha512.New
+	L = uint(256)
+	Z = F.Elt(-4)
+	sgn0 = GF.SignLE
+	suites["P521-SHA512-SSWU-NU-"] = EncodeToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P521-SHA512-SSWU-RO-"] = HashToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P521-SHA512-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
+	suites["P521-SHA512-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
 }
