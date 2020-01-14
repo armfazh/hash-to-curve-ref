@@ -93,14 +93,14 @@ func suitesWCurves() {
 
 	E = C.GetFromName("P384")
 	F = E.Field()
-	h = sha512.New384
+	h = sha512.New
 	L = uint(192)
 	Z = F.Elt(-12)
 	sgn0 = GF.SignLE
-	suites["P384-SHA384-SSWU-NU-"] = EncodeToCurve{E, L, h, sswu.New(E, Z, sgn0)}
-	suites["P384-SHA384-SSWU-RO-"] = HashToCurve{E, L, h, sswu.New(E, Z, sgn0)}
-	suites["P384-SHA384-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
-	suites["P384-SHA384-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
+	suites["P384-SHA512-SSWU-NU-"] = EncodeToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P384-SHA512-SSWU-RO-"] = HashToCurve{E, L, h, sswu.New(E, Z, sgn0)}
+	suites["P384-SHA512-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
+	suites["P384-SHA512-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
 
 	E = C.GetFromName("P521")
 	F = E.Field()

@@ -13,7 +13,6 @@ import (
 func suiteSECP2556K1() {
 	iso := getIsogenySECP256K1()
 	E := iso.Domain()
-	// E := C.GetFromName("secp256k1-3iso")
 	F := E.Field()
 	h := sha256.New
 	Z := F.Elt(-11)
@@ -66,10 +65,10 @@ func (m isosecp256k1) Push(p C.Point) C.Point {
 	F := m.E0.F
 	x0, y0 := p.X(), p.Y()
 
-	xNum := evalPoly(F, x0, m.xNum)
-	xDen := evalPoly(F, x0, m.xDen)
-	yNum := evalPoly(F, x0, m.yNum)
-	yDen := evalPoly(F, x0, m.yDen)
+	xNum := m.evalPoly(m.xNum, x0)
+	xDen := m.evalPoly(m.xDen, x0)
+	yNum := m.evalPoly(m.yNum, x0)
+	yDen := m.evalPoly(m.yDen, x0)
 
 	x1 := F.Mul(xNum, F.Inv(xDen))
 	y1 := F.Mul(yNum, F.Inv(yDen))
@@ -78,11 +77,12 @@ func (m isosecp256k1) Push(p C.Point) C.Point {
 	return m.E1.NewPoint(x1, y1)
 }
 
-// evalPoly evaluates a polynomial, given by its coefficients, on x. fx= sum a_ix^i
-func evalPoly(f GF.Field, x GF.Elt, a []GF.Elt) GF.Elt {
-	fx := f.Zero()
+// evalPoly evaluates a polynomial a on x, it returns sum a_ix^i
+func (m isosecp256k1) evalPoly(a []GF.Elt, x GF.Elt) GF.Elt {
+	F := m.E0.F
+	fx := F.Zero()
 	for i := len(a) - 1; i >= 0; i-- {
-		fx = f.Add(f.Mul(fx, x), a[i])
+		fx = F.Add(F.Mul(fx, x), a[i])
 	}
 	return fx
 }
