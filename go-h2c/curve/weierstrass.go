@@ -16,9 +16,9 @@ type W = *WECurve
 func (e *WECurve) String() string { return "y^2=x^3+Ax+B\n" + e.params.String() }
 
 // NewWeierstrass returns a Weierstrass curve
-func NewWeierstrass(f GF.Field, a, b GF.Elt, r, h *big.Int) *WECurve {
+func NewWeierstrass(id CurveID, f GF.Field, a, b GF.Elt, r, h *big.Int) *WECurve {
 	if e := (&WECurve{&params{
-		F: f, A: a, B: b, R: r, H: h,
+		Id: id, F: f, A: a, B: b, R: r, H: h,
 	}}); e.IsValid() {
 		return e
 	}
@@ -139,9 +139,17 @@ func (e *WECurve) Double(p Point) Point {
 
 	return &ptWe{e, &afPoint{x: x, y: y}}
 }
-func (e *WECurve) ClearCofactor(p Point) Point {
-	return p
+func (e *WECurve) ScalarMult(p Point, k *big.Int) Point {
+	Q := e.Identity()
+	for i := k.BitLen() - 1; i >= 0; i-- {
+		Q = e.Double(Q)
+		if k.Bit(i) != 0 {
+			Q = e.Add(Q, p)
+		}
+	}
+	return Q
 }
+func (e *WECurve) ClearCofactor(p Point) Point { return e.ScalarMult(p, e.H) }
 
 // ptWe is an affine point on a WECurve curve.
 type ptWe struct {

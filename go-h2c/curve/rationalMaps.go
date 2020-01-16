@@ -15,7 +15,7 @@ func (e *MTCurve) ToWeierstrassC() RationalMap {
 	invB := F.Inv(e.params.B)
 	a := F.Mul(invB, e.params.A)
 	b := F.Sqr(invB)
-	return &mt2wec{E0: e, E1: NewWeierstrassC(F, a, b, e.params.R, e.params.H), invB: invB}
+	return &mt2wec{E0: e, E1: NewWeierstrassC(Custom, F, a, b, e.params.R, e.params.H), invB: invB}
 }
 
 func (r *mt2wec) Domain() EllCurve   { return r.E0 }
@@ -59,7 +59,7 @@ func (e *TECurve) ToWeierstrassC() RationalMap {
 	t0 = F.Mul(t0, half)               // (a-d)/4
 	invSqrtD := F.Inv(t0)              // 4/(a-d)
 	b := F.Sqr(t0)                     // B = (a-d)^2/16
-	return &te2wec{E0: e, E1: NewWeierstrassC(F, a, b, e.params.R, e.params.H), invSqrtD: invSqrtD}
+	return &te2wec{E0: e, E1: NewWeierstrassC(Custom, F, a, b, e.params.R, e.params.H), invSqrtD: invSqrtD}
 }
 
 func (r *te2wec) Domain() EllCurve   { return r.E0 }
@@ -120,7 +120,7 @@ func (e *WCCurve) ToWeierstrass() RationalMap {
 	t1 = F.Mul(t1, e.A)       // A(2A^2 - 9B)
 	t0 = F.Inv(F.Elt(27))     // 1/27
 	B := F.Mul(t0, t1)        // A(2A^2 - 9B)/27
-	return &wc2we{E0: e, E1: NewWeierstrass(F, A, B, e.params.R, e.params.H), Adiv3: Adiv3}
+	return &wc2we{E0: e, E1: NewWeierstrass(Custom, F, A, B, e.params.R, e.params.H), Adiv3: Adiv3}
 }
 func (r *wc2we) Domain() EllCurve   { return r.E0 }
 func (r *wc2we) Codomain() EllCurve { return r.E1 }

@@ -10,6 +10,7 @@ import (
 type Point interface {
 	IsIdentity() bool
 	IsEqual(Point) bool
+	IsTwoTorsion() bool
 	Copy() Point
 	X() GF.Elt
 	Y() GF.Elt

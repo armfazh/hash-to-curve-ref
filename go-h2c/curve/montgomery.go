@@ -16,9 +16,9 @@ type M = *MTCurve
 func (e *MTCurve) String() string { return "By^2=x^3+Ax^2+x\n" + e.params.String() }
 
 // NewMontgomery returns a Montgomery curve
-func NewMontgomery(f GF.Field, a, b GF.Elt, r, h *big.Int) *MTCurve {
+func NewMontgomery(id CurveID, f GF.Field, a, b GF.Elt, r, h *big.Int) *MTCurve {
 	if e := (&MTCurve{&params{
-		F: f, A: a, B: b, R: r, H: h,
+		Id: id, F: f, A: a, B: b, R: r, H: h,
 	}}); e.IsValid() {
 		return e
 	}
@@ -135,9 +135,17 @@ func (e *MTCurve) Double(p Point) Point {
 	return &ptMt{e, &afPoint{x: x, y: y}}
 }
 
-func (e *MTCurve) ClearCofactor(p Point) Point {
-	return p
+func (e *MTCurve) ScalarMult(p Point, k *big.Int) Point {
+	Q := e.Identity()
+	for i := k.BitLen() - 1; i >= 0; i-- {
+		Q = e.Double(Q)
+		if k.Bit(i) != 0 {
+			Q = e.Add(Q, p)
+		}
+	}
+	return Q
 }
+func (e *MTCurve) ClearCofactor(p Point) Point { return e.ScalarMult(p, e.H) }
 
 // ptMt is an affine point on a Montgomery curve.
 type ptMt struct {

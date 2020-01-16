@@ -18,9 +18,9 @@ func (e *TECurve) String() string {
 }
 
 // NewEdwards returns a twisted Edwards curve
-func NewEdwards(f GF.Field, a, d GF.Elt, r, h *big.Int) *TECurve {
+func NewEdwards(id CurveID, f GF.Field, a, d GF.Elt, r, h *big.Int) *TECurve {
 	if e := (&TECurve{&params{
-		F: f, A: a, D: d, R: r, H: h,
+		Id: id, F: f, A: a, D: d, R: r, H: h,
 	}}); e.IsValid() {
 		return e
 	}
@@ -91,10 +91,17 @@ func (e *TECurve) Neg(p Point) Point {
 	return &ptTe{e, &afPoint{x: e.F.Neg(P.x), y: P.y.Copy()}}
 }
 func (e *TECurve) Double(p Point) Point { return e.Add(p, p) }
-
-func (e *TECurve) ClearCofactor(p Point) Point {
-	return p
+func (e *TECurve) ScalarMult(p Point, k *big.Int) Point {
+	Q := e.Identity()
+	for i := k.BitLen() - 1; i >= 0; i-- {
+		Q = e.Double(Q)
+		if k.Bit(i) != 0 {
+			Q = e.Add(Q, p)
+		}
+	}
+	return Q
 }
+func (e *TECurve) ClearCofactor(p Point) Point { return e.ScalarMult(p, e.H) }
 
 type ptTe struct {
 	*TECurve
@@ -107,6 +114,5 @@ func (p *ptTe) IsEqual(q Point) bool {
 	qq := q.(*ptTe)
 	return p.TECurve == qq.TECurve && p.isEqual(p.F, qq.afPoint)
 }
-func (p *ptTe) IsIdentity() bool {
-	return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.One())
-}
+func (p *ptTe) IsIdentity() bool   { return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.One()) }
+func (p *ptTe) IsTwoTorsion() bool { return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.Elt(-1)) }

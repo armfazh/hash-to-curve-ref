@@ -19,8 +19,8 @@ type WC = *WCCurve
 func (e *WCCurve) String() string { return "y^2=x^3+Ax^2+Bx\n" + e.params.String() }
 
 // NewWeierstrassC returns a Weierstrass curve
-func NewWeierstrassC(f GF.Field, a, b GF.Elt, r, h *big.Int) *WCCurve {
-	if e := (&WCCurve{params: &params{F: f, A: a, B: b, R: r, H: h}}); e.IsValid() {
+func NewWeierstrassC(id CurveID, f GF.Field, a, b GF.Elt, r, h *big.Int) *WCCurve {
+	if e := (&WCCurve{params: &params{Id: id, F: f, A: a, B: b, R: r, H: h}}); e.IsValid() {
 		e.RationalMap = e.ToWeierstrass()
 		return e
 	}

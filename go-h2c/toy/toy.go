@@ -23,53 +23,54 @@ var ToyCurves map[string]EC
 func initCurves() {
 	ToyCurves = make(map[string]EC)
 
-	var f53 = GF.NewFp("p53", 53) // 1mod4, 2mod3
-	var f59 = GF.NewFp("p59", 59) // 3mod4, 2mod3
+	var P53, P59 GF.PrimeID
+	var f53 = GF.NewFp(P53, 53) // 1mod4, 2mod3
+	var f59 = GF.NewFp(P59, 59) // 3mod4, 2mod3
 
-	RegisterToyCurve("W0", C.NewWeierstrass(f53,
+	registerToyCurve("W0", C.NewWeierstrass(C.Custom, f53,
 		f53.Elt(3), f53.Elt(2), big.NewInt(51), big.NewInt(3)),
 		f53.Elt(46), f53.Elt(3))
 
-	RegisterToyCurve("W1", C.NewWeierstrass(f53,
+	registerToyCurve("W1", C.NewWeierstrass(C.Custom, f53,
 		f53.Zero(), f53.One(), big.NewInt(54), big.NewInt(2)),
 		f53.Elt(13), f53.Elt(5))
 
-	RegisterToyCurve("W1iso", C.NewWeierstrass(f53,
+	registerToyCurve("W1iso", C.NewWeierstrass(C.Custom, f53,
 		f53.Elt(38), f53.Elt(22), big.NewInt(54), big.NewInt(2)),
 		f53.Elt(41), f53.Elt(45))
 
-	RegisterToyCurve("W2", C.NewWeierstrass(f53,
+	registerToyCurve("W2", C.NewWeierstrass(C.Custom, f53,
 		f53.Zero(), f53.Elt(2), big.NewInt(51), big.NewInt(3)),
 		f53.Elt(37), f53.Elt(27))
 
-	RegisterToyCurve("W3", C.NewWeierstrass(f59,
+	registerToyCurve("W3", C.NewWeierstrass(C.Custom, f59,
 		f59.Elt(16), f59.Zero(), big.NewInt(60), big.NewInt(4)),
 		f59.Elt(33), f59.Elt(11))
 
-	RegisterToyCurve("WC0", C.NewWeierstrassC(f53,
+	registerToyCurve("WC0", C.NewWeierstrassC(C.Custom, f53,
 		f53.Elt(2), f53.Elt(3), big.NewInt(66), big.NewInt(6)),
 		f53.Elt(45), f53.Elt(4))
 
-	RegisterToyCurve("M0", C.NewMontgomery(f53,
+	registerToyCurve("M0", C.NewMontgomery(C.Custom, f53,
 		f53.Elt(4), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
 		f53.Elt(16), f53.Elt(4))
 
-	RegisterToyCurve("M1", C.NewMontgomery(f53,
+	registerToyCurve("M1", C.NewMontgomery(C.Custom, f53,
 		f53.Elt(3), f53.Elt(1), big.NewInt(48), big.NewInt(4)),
 		f53.Elt(14), f53.Elt(22))
 
-	RegisterToyCurve("E0", C.NewEdwards(f53,
+	registerToyCurve("E0", C.NewEdwards(C.Custom, f53,
 		f53.Elt(1), f53.Elt(3), big.NewInt(44), big.NewInt(4)),
 		f53.Elt(17), f53.Elt(49))
 
-	RegisterToyCurve("E1", C.NewEdwards(f53,
+	registerToyCurve("E1", C.NewEdwards(C.Custom, f53,
 		f53.Elt(-1), f53.Elt(12), big.NewInt(48), big.NewInt(4)),
 		f53.Elt(3), f53.Elt(19))
 
 }
 
-// RegisterToyCurve is
-func RegisterToyCurve(name string, e C.EllCurve, x, y GF.Elt) {
+// registerToyCurve is
+func registerToyCurve(name string, e C.EllCurve, x, y GF.Elt) {
 	n := EC{E: e, P: e.NewPoint(x, y)}
 	ToyCurves[name] = n
 }

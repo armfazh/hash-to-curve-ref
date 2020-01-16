@@ -8,6 +8,7 @@ import (
 )
 
 type params struct {
+	Id      CurveID
 	F       GF.Field
 	A, B, D GF.Elt
 	R       *big.Int
@@ -15,7 +16,7 @@ type params struct {
 }
 
 func (e *params) String() string {
-	return fmt.Sprintf("F: %v\nA: %v\nB: %v\n", e.F, e.A, e.B)
+	return fmt.Sprintf("Id: %v\nF: %v\nA: %v\nB: %v\n", e.Id, e.F, e.A, e.B)
 }
 func (e *params) Field() GF.Field    { return e.F }
 func (e *params) Order() *big.Int    { return e.R }
@@ -46,3 +47,4 @@ func (p *infPoint) Y() GF.Elt            { return nil }
 func (p *infPoint) Copy() Point          { return &infPoint{} }
 func (p *infPoint) IsEqual(q Point) bool { _, t := q.(*infPoint); return t }
 func (p *infPoint) IsIdentity() bool     { return true }
+func (p *infPoint) IsTwoTorsion() bool   { return false }

@@ -12,16 +12,17 @@ import (
 
 func suiteSECP2556K1() {
 	iso := getIsogenySECP256K1()
-	E := iso.Domain()
-	F := E.Field()
+	E0 := iso.Domain()
+	E1 := iso.Codomain()
+	F := E0.Field()
 	h := sha256.New
 	Z := F.Elt(-11)
-	L := uint(128)
+	L := uint(48)
 	sgn0 := GF.SignLE
-	suites["secp256k1-SHA256-SSWU-NU-"] = EncodeToCurve{E, L, h, sswuAB0.New(E, Z, sgn0, iso)}
-	suites["secp256k1-SHA256-SSWU-RO-"] = HashToCurve{E, L, h, sswuAB0.New(E, Z, sgn0, iso)}
-	suites["secp256k1-SHA256-SVDW-NU-"] = EncodeToCurve{E, L, h, svdw.New(E, sgn0)}
-	suites["secp256k1-SHA256-SVDW-RO-"] = HashToCurve{E, L, h, svdw.New(E, sgn0)}
+	Suites["secp256k1-SHA256-SSWU-NU-"] = GetEncodeToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
+	Suites["secp256k1-SHA256-SSWU-RO-"] = GetHashToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
+	Suites["secp256k1-SHA256-SVDW-NU-"] = GetEncodeToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
+	Suites["secp256k1-SHA256-SVDW-RO-"] = GetHashToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
 }
 
 type isosecp256k1 struct {
@@ -31,8 +32,8 @@ type isosecp256k1 struct {
 
 // getIsogenySECP256K1 returns a 3-isoeny
 func getIsogenySECP256K1() C.Isogeny {
-	e0 := C.GetFromName("secp256k1-3iso")
-	e1 := C.GetFromName("secp256k1")
+	e0 := C.SECP256K1_3ISO.Get()
+	e1 := C.SECP256K1.Get()
 	F := e0.Field()
 	return isosecp256k1{
 		E0: e0.(C.W),

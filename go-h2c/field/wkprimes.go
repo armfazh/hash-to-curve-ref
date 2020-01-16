@@ -1,11 +1,11 @@
 package field
 
-// Prime is a modulus
-type Prime int
+// PrimeID is a modulus
+type PrimeID int
 
 const (
 	// P25519 is 2^255-19
-	P25519 Prime = iota
+	P25519 PrimeID = iota + 1
 	// P256 is 2^256-2^224+2^192+2^96-1
 	P256
 	// P256K1 is 2^256-2^32-977
@@ -18,29 +18,48 @@ const (
 	P521
 )
 
-// GetFromID is
-func GetFromID(id Prime) Field {
+func (id PrimeID) String() string {
 	switch id {
 	case P25519:
-		return NewFp("2^255-19",
+		return "2^255-19"
+	case P256:
+		return "2^256-2^224+2^192+2^96-1"
+	case P256K1:
+		return "2^256-2^32-977"
+	case P384:
+		return "2^384-2^128-2^96+2^32-1"
+	case P448:
+		return "2^448-2^224-1"
+	case P521:
+		return "2^521-1"
+	default:
+		return ""
+	}
+}
+
+// Get is
+func (id PrimeID) Get() Field {
+	switch id {
+	case P25519:
+		return NewFp(id,
 			BigFromString("57896044618658097711785492504343953926634992332820282019728792003956564819949"))
 	case P256:
-		return NewFp("2^256-2^224+2^192+2^96-1",
+		return NewFp(id,
 			BigFromString("115792089210356248762697446949407573530086143415290314195533631308867097853951"))
 	case P256K1:
-		return NewFp("2^256-2^32-977",
+		return NewFp(id,
 			BigFromString("115792089237316195423570985008687907853269984665640564039457584007908834671663"))
 	case P384:
-		return NewFp("2^384-2^128-2^96+2^32-1",
+		return NewFp(id,
 			BigFromString("39402006196394479212279040100143613805079739270465446667948293404245721771496870329047266088258938001861606973112319"))
 	case P448:
-		return NewFp("2^448-2^224-1",
+		return NewFp(id,
 			BigFromString("726838724295606890549323807888004534353641360687318060281490199180612328166730772686396383698676545930088884461843637361053498018365439"))
 	case P521:
-		return NewFp("2^521-1",
+		return NewFp(id,
 			BigFromString("6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151"))
 	default:
-		panic("not supported")
+		panic("field not supported")
 	}
 }
 

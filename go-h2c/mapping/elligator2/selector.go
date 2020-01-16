@@ -9,17 +9,17 @@ import (
 )
 
 // New is
-func New(e C.EllCurve, sgn0 GF.Sgn0ID, rat C.RationalMap) M.Map {
+func New(e C.EllCurve, sgn0 GF.Sgn0ID) M.Map {
 	switch curve := e.(type) {
 	case C.W:
 		return newWA0Ell2(curve, sgn0)
 	case C.WC:
 		return newWCEll2(curve, sgn0)
-	case C.T:
-		return newTEEll2(curve, sgn0, rat)
 	case C.M:
-		return newMTEll2(curve, sgn0, rat)
+		return newMTEll2(curve, sgn0)
+	case C.T:
+		return newTEEll2(curve, sgn0)
 	default:
-		panic(fmt.Errorf("Curve didn't match elligator2 mapping"))
+		panic(fmt.Errorf("Curve doesn't support an elligator2 mapping"))
 	}
 }
