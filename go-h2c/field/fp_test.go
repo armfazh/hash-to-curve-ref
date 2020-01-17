@@ -1,7 +1,6 @@
 package field_test
 
 import (
-	"fmt"
 	"testing"
 
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
@@ -20,7 +19,7 @@ func TestSqrt(t *testing.T) {
 }
 
 func testSqrt(t *testing.T, p int) {
-	F := GF.NewFp(fmt.Sprintf("p%v", p), p)
+	F := GF.NewFp(GF.PrimeID(p), p)
 	for i := 0; i < p; i++ {
 		x := F.Elt(i)
 		if F.IsSquare(x) {

@@ -19,7 +19,7 @@ func suitesMCurves() {
 
 	E = C.Edwards25519.Get()
 	Suites["edwards25519-SHA256-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	// Suites["edwards25519-SHA256-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["edwards25519-SHA256-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
 
 	E = C.Curve448.Get()
 	h = sha512.New
@@ -28,7 +28,7 @@ func suitesMCurves() {
 	Suites["curve448-SHA512-ELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
 	Suites["curve448-SHA512-ELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
 
-	// E = C.Edwards448.Get()
-	// Suites["edwards448-SHA512-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	// Suites["edwards448-SHA512-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	E = C.Edwards448.Get()
+	Suites["edwards448-SHA512-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["edwards448-SHA512-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
 }

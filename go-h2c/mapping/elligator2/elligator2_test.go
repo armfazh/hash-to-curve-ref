@@ -22,8 +22,8 @@ func TestMap(t *testing.T) {
 		F := E.Field()
 		n := F.Order().Int64()
 		for _, m := range []mapping.Map{
-			elligator2.New(E, GF.SignLE, nil),
-			elligator2.New(E, GF.SignBE, nil),
+			elligator2.New(E, GF.SignLE),
+			elligator2.New(E, GF.SignBE),
 		} {
 			for i := int64(0); i < n; i++ {
 				u := F.Elt(i)
