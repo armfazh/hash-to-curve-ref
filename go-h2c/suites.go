@@ -6,44 +6,11 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/elligator2"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswu"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswuAB0"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/svdw"
 )
-
-// var suiteNames = []string{
-// 	"BLS12381G1-SHA256-SSWU-NU-",
-// 	"BLS12381G1-SHA256-SSWU-RO-",
-// 	"BLS12381G1-SHA256-SVDW-NU-",
-// 	"BLS12381G1-SHA256-SVDW-RO-",
-// 	"BLS12381G2-SHA256-SSWU-NU-",
-// 	"BLS12381G2-SHA256-SSWU-RO-",
-// 	"BLS12381G2-SHA256-SVDW-NU-",
-// 	"BLS12381G2-SHA256-SVDW-RO-",
-// 	"curve25519-SHA256-ELL2-NU-",
-// 	"curve25519-SHA256-ELL2-RO-",
-// 	"curve448-SHA512-ELL2-NU-",
-// 	"curve448-SHA512-ELL2-RO-",
-// 	"edwards25519-SHA256-EDELL2-NU-",
-// 	"edwards25519-SHA256-EDELL2-RO-",
-// 	"edwards448-SHA512-EDELL2-NU-",
-// 	"edwards448-SHA512-EDELL2-RO-",
-// 	"P256-SHA256-SSWU-NU-",
-// 	"P256-SHA256-SSWU-RO-",
-// 	"P256-SHA256-SVDW-NU-",
-// 	"P256-SHA256-SVDW-RO-",
-// 	"P384-SHA512-SSWU-NU-",
-// 	"P384-SHA512-SSWU-RO-",
-// 	"P384-SHA512-SVDW-NU-",
-// 	"P384-SHA512-SVDW-RO-",
-// 	"P521-SHA512-SSWU-NU-",
-// 	"P521-SHA512-SSWU-RO-",
-// 	"P521-SHA512-SVDW-NU-",
-// 	"P521-SHA512-SVDW-RO-",
-// 	"secp256k1-SHA256-SSWU-NU-",
-// 	"secp256k1-SHA256-SSWU-RO-",
-// 	"secp256k1-SHA256-SVDW-NU-",
-// 	"secp256k1-SHA256-SVDW-RO-",
-// }
 
 // Suites is a list of supported hash to curve suites
 var Suites map[string]HashToPoint
@@ -88,4 +55,43 @@ func suitesWCurves() {
 	Suites["P521-SHA512-SSWU-RO-"] = GetHashToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
 	Suites["P521-SHA512-SVDW-NU-"] = GetEncodeToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
 	Suites["P521-SHA512-SVDW-RO-"] = GetHashToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
+}
+
+func suitesMCurves() {
+	E := C.Curve25519.Get()
+	h := sha256.New
+	L := uint(48)
+	sgn0 := GF.SignLE
+	Suites["curve25519-SHA256-ELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["curve25519-SHA256-ELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+
+	E = C.Edwards25519.Get()
+	Suites["edwards25519-SHA256-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["edwards25519-SHA256-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+
+	E = C.Curve448.Get()
+	h = sha512.New
+	L = uint(84)
+	sgn0 = GF.SignLE
+	Suites["curve448-SHA512-ELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["curve448-SHA512-ELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+
+	E = C.Edwards448.Get()
+	Suites["edwards448-SHA512-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+	Suites["edwards448-SHA512-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
+}
+
+func suiteSECP2556K1() {
+	iso := C.GetSECP256K1Isogeny()
+	E0 := iso.Domain()
+	E1 := iso.Codomain()
+	h := sha256.New
+	F := E0.Field()
+	Z := F.Elt(-11)
+	L := uint(48)
+	sgn0 := GF.SignLE
+	Suites["secp256k1-SHA256-SSWU-NU-"] = GetEncodeToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
+	Suites["secp256k1-SHA256-SSWU-RO-"] = GetHashToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
+	Suites["secp256k1-SHA256-SVDW-NU-"] = GetEncodeToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
+	Suites["secp256k1-SHA256-SVDW-RO-"] = GetHashToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
 }

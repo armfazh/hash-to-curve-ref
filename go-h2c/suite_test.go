@@ -10,15 +10,6 @@ import (
 	h2c "github.com/armfazh/hash-to-curve-ref/go-h2c"
 )
 
-// func TestSuite(t *testing.T) {
-// 	msg := []byte("hello")
-// 	dst := []byte("world")
-// 	for name, suite := range h2c.Suites {
-// 		t.Logf("%v\n", name)
-// 		suite.Hash(msg, dst)
-// 	}
-// }
-
 type vectorSuite struct {
 	SuiteID   string `json:"ciphersuite"`
 	CurveName string `json:"curve"`

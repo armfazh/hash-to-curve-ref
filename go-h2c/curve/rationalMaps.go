@@ -260,3 +260,57 @@ func (m te2mt4iso448) Pull(p Point) Point {
 	yy := F.Mul(yNum, F.Inv(yDen))
 	return m.E0.NewPoint(xx, yy)
 }
+
+type isosecp256k1 struct {
+	E0, E1                 W
+	xNum, xDen, yNum, yDen []GF.Elt
+}
+
+// GetSECP256K1Isogeny returns a 3-isoeny to the SECP256K1 curve.
+func GetSECP256K1Isogeny() Isogeny {
+	e0 := SECP256K1_3ISO.Get()
+	e1 := SECP256K1.Get()
+	F := e0.Field()
+	return isosecp256k1{
+		E0: e0.(W),
+		E1: e1.(W),
+		xNum: []GF.Elt{
+			F.Elt("0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa8c7"),
+			F.Elt("0x07d3d4c80bc321d5b9f315cea7fd44c5d595d2fc0bf63b92dfff1044f17c6581"),
+			F.Elt("0x534c328d23f234e6e2a413deca25caece4506144037c40314ecbd0b53d9dd262"),
+			F.Elt("0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa88c")},
+		xDen: []GF.Elt{
+			F.Elt("0xd35771193d94918a9ca34ccbb7b640dd86cd409542f8487d9fe6b745781eb49b"),
+			F.Elt("0xedadc6f64383dc1df7c4b2d51b54225406d36b641f5e41bbc52a56612a8c6d14"),
+			F.One(),
+			F.Zero()},
+		yNum: []GF.Elt{
+			F.Elt("0x4bda12f684bda12f684bda12f684bda12f684bda12f684bda12f684b8e38e23c"),
+			F.Elt("0xc75e0c32d5cb7c0fa9d0a54b12a0a6d5647ab046d686da6fdffc90fc201d71a3"),
+			F.Elt("0x29a6194691f91a73715209ef6512e576722830a201be2018a765e85a9ecee931"),
+			F.Elt("0x2f684bda12f684bda12f684bda12f684bda12f684bda12f684bda12f38e38d84")},
+		yDen: []GF.Elt{
+			F.Elt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffff93b"),
+			F.Elt("0x7a06534bb8bdb49fd5e9e6632722c2989467c1bfc8e8d978dfb425d2685c2573"),
+			F.Elt("0x6484aa716545ca2cf3a70c3fa8fe337e0a3d21162f0d6299a7bf8192bfd2a76f"),
+			F.One()},
+	}
+}
+func (m isosecp256k1) String() string     { return fmt.Sprintf("3-Isogeny from %v to\n%v", m.E0, m.E1) }
+func (m isosecp256k1) Domain() EllCurve   { return m.E0 }
+func (m isosecp256k1) Codomain() EllCurve { return m.E1 }
+func (m isosecp256k1) Push(p Point) Point {
+	F := m.E0.F
+	x, y := p.X(), p.Y()
+	xNum, xDen, yNum, yDen := F.Zero(), F.Zero(), F.Zero(), F.Zero()
+	for i := 3; i >= 0; i-- {
+		xNum = F.Add(F.Mul(xNum, x), m.xNum[i])
+		xDen = F.Add(F.Mul(xDen, x), m.xDen[i])
+		yNum = F.Add(F.Mul(yNum, x), m.yNum[i])
+		yDen = F.Add(F.Mul(yDen, x), m.yDen[i])
+	}
+	xx := F.Mul(xNum, F.Inv(xDen))
+	yy := F.Mul(yNum, F.Inv(yDen))
+	yy = F.Mul(yy, y)
+	return m.E1.NewPoint(xx, yy)
+}
