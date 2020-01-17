@@ -23,7 +23,7 @@ var ToyCurves map[string]EC
 func initCurves() {
 	ToyCurves = make(map[string]EC)
 
-	var P53, P59 GF.PrimeID
+	var P53, P59 GF.ID
 	var f53 = GF.NewFp(P53, 53) // 1mod4, 2mod3
 	var f59 = GF.NewFp(P59, 59) // 3mod4, 2mod3
 

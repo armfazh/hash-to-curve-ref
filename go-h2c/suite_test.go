@@ -64,10 +64,10 @@ func TestVectors(t *testing.T) {
 				return nil
 			}
 			jsonFile, errFile := os.Open(path)
-			defer jsonFile.Close()
 			if errFile != nil {
 				return errFile
 			}
+			defer jsonFile.Close()
 
 			byteValue, errRead := ioutil.ReadAll(jsonFile)
 			if errRead != nil {

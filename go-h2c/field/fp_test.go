@@ -19,7 +19,7 @@ func TestSqrt(t *testing.T) {
 }
 
 func testSqrt(t *testing.T, p int) {
-	F := GF.NewFp(GF.PrimeID(p), p)
+	F := GF.NewFp(GF.ID(p), p)
 	for i := 0; i < p; i++ {
 		x := F.Elt(i)
 		if F.IsSquare(x) {

@@ -16,7 +16,7 @@ func (e fpElt) Copy() Elt      { return &fpElt{new(big.Int).Set(e.n)} }
 // fp implements a prime field.
 type fp struct {
 	p   *big.Int
-	id  PrimeID
+	id  ID
 	cte struct {
 		pMinus1div2 *big.Int
 		pMinus2     *big.Int
@@ -25,7 +25,7 @@ type fp struct {
 }
 
 // NewFp is
-func NewFp(id PrimeID, p interface{}) Field {
+func NewFp(id ID, p interface{}) Field {
 	prime := fromType(p)
 	if !prime.ProbablyPrime(4) {
 		panic(fmt.Errorf("Modulus is not prime p:%v", prime))

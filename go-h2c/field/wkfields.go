@@ -1,11 +1,11 @@
 package field
 
-// PrimeID is a modulus
-type PrimeID int
+// ID is a modulus
+type ID int
 
 const (
 	// P25519 is 2^255-19
-	P25519 PrimeID = iota + 1
+	P25519 ID = iota + 1
 	// P256 is 2^256-2^224+2^192+2^96-1
 	P256
 	// P256K1 is 2^256-2^32-977
@@ -18,7 +18,7 @@ const (
 	P521
 )
 
-func (id PrimeID) String() string {
+func (id ID) String() string {
 	switch id {
 	case P25519:
 		return "2^255-19"
@@ -38,7 +38,7 @@ func (id PrimeID) String() string {
 }
 
 // Get is
-func (id PrimeID) Get() Field {
+func (id ID) Get() Field {
 	switch id {
 	case P25519:
 		return NewFp(id,
