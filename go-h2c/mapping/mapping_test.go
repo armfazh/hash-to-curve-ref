@@ -80,7 +80,7 @@ func TestSSWU(t *testing.T) {
 		E := toy.ToyCurves[c.Name].E
 		F := E.Field()
 		n := F.Order().Int64()
-		iso := doubleIso{E}
+		iso := func() C.Isogeny { return doubleIso{E} }
 		Z := F.Elt(c.Z)
 		for _, m := range []mapping.MapToCurve{
 			mapping.NewSSWU(E, Z, GF.SignLE, nil),
