@@ -1,4 +1,4 @@
-package bf
+package mapping
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type bf struct {
@@ -18,8 +17,8 @@ type bf struct {
 
 func (m bf) String() string { return fmt.Sprintf("Boneh-Franklin for E: %v", m.E) }
 
-// New is
-func New(e C.EllCurve) M.Map {
+// NewBF is
+func NewBF(e C.EllCurve) MapToCurve {
 	if s := (&bf{E: e.(C.W)}); s.verify() {
 		s.precmp()
 		return s
@@ -42,7 +41,7 @@ func (m *bf) precmp() {
 	m.cte.C1 = t0
 }
 
-func (m *bf) MapToCurve(u GF.Elt) C.Point {
+func (m *bf) Map(u GF.Elt) C.Point {
 	F := m.E.F
 	t0 := F.Sqr(u)           // u^2
 	t0 = F.Sub(t0, m.E.B)    // u^2-B

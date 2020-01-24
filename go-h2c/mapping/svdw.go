@@ -1,11 +1,10 @@
-package svdw
+package mapping
 
 import (
 	"fmt"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type svdw struct {
@@ -17,8 +16,8 @@ type svdw struct {
 
 func (m svdw) String() string { return fmt.Sprintf("SVDW for E: %v", m.E) }
 
-// New is
-func New(e C.EllCurve, sgn0 GF.Sgn0ID) M.Map {
+// NewSVDW is
+func NewSVDW(e C.EllCurve, sgn0 GF.Sgn0ID) MapToCurve {
 	curve := e.(C.W)
 	s := &svdw{E: curve, Sgn0: curve.F.GetSgn0(sgn0)}
 	s.precmp()
@@ -90,7 +89,7 @@ func (m *svdw) precmp() {
 	m.c4 = F.Add(t0, t0) // -4g(Z)/(3Z^2+4A)
 }
 
-func (m *svdw) MapToCurve(u GF.Elt) C.Point {
+func (m *svdw) Map(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1, t2, t3, t4 GF.Elt
 	var x1, x2, x3, gx1, gx2, gx, x, y GF.Elt

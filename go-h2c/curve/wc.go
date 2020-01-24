@@ -43,6 +43,10 @@ func (e *WCCurve) IsValid() bool {
 	t0 = F.Mul(t0, e.B)   // B(A^2-4B)
 	return !F.IsZero(t0)  // B(A^2-4B) != 0
 }
+func (e *WCCurve) IsEqual(ec EllCurve) bool {
+	e0 := ec.(*WECurve)
+	return e.F.IsEqual(e0.F) && e.F.AreEqual(e.A, e0.A) && e.F.AreEqual(e.B, e0.B)
+}
 func (e *WCCurve) Identity() Point             { return &infPoint{} }
 func (e *WCCurve) IsOnCurve(p Point) bool      { return e.Codomain().IsOnCurve(e.Push(p)) }
 func (e *WCCurve) Add(p, q Point) Point        { return e.Pull(e.Codomain().Add(e.Push(p), e.Push(q))) }
@@ -60,7 +64,7 @@ func (p *ptWc) String() string { return p.afPoint.String() }
 func (p *ptWc) Copy() Point    { return &ptWc{p.WCCurve, p.copy()} }
 func (p *ptWc) IsEqual(q Point) bool {
 	qq := q.(*ptWc)
-	return p.WCCurve == qq.WCCurve && p.isEqual(p.F, qq.afPoint)
+	return p.WCCurve.IsEqual(qq.WCCurve) && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptWc) IsIdentity() bool   { return false }
 func (p *ptWc) IsTwoTorsion() bool { return p.F.IsZero(p.y) }

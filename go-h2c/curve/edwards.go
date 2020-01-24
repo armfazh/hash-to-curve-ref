@@ -40,6 +40,10 @@ func (e *TECurve) IsValid() bool {
 	cond3 := !F.IsZero(e.D)        // D != 0
 	return cond1 && cond2 && cond3
 }
+func (e *TECurve) IsEqual(ec EllCurve) bool {
+	e0 := ec.(*TECurve)
+	return e.F.IsEqual(e0.F) && e.F.AreEqual(e.A, e0.A) && e.F.AreEqual(e.D, e0.D)
+}
 func (e *TECurve) IsComplete() bool {
 	F := e.F
 	return F.IsSquare(e.A) && !F.IsSquare(e.D) // A != D
@@ -112,7 +116,7 @@ func (p *ptTe) String() string { return p.afPoint.String() }
 func (p *ptTe) Copy() Point    { return &ptTe{p.TECurve, p.copy()} }
 func (p *ptTe) IsEqual(q Point) bool {
 	qq := q.(*ptTe)
-	return p.TECurve == qq.TECurve && p.isEqual(p.F, qq.afPoint)
+	return p.TECurve.IsEqual(qq.TECurve) && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptTe) IsIdentity() bool   { return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.One()) }
 func (p *ptTe) IsTwoTorsion() bool { return p.F.IsZero(p.x) && p.F.AreEqual(p.y, p.F.Elt(-1)) }

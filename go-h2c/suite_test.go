@@ -33,14 +33,12 @@ type vectorSuite struct {
 	} `json:"vectors"`
 }
 
-func (v vectorSuite) testVector(t *testing.T) {
-	t.Helper()
-	hashToCurve, ok := h2c.Suites[v.SuiteID]
-	if !ok {
-		t.Skipf("suite not supported yet: %v\n", v.SuiteID)
+func (v vectorSuite) test(t *testing.T) {
+	hashToCurve, err := h2c.GetFromName(v.SuiteID)
+	if err != nil {
+		t.Skipf(err.Error())
 	}
-	params := hashToCurve.GetParams()
-	E := params.E
+	E := hashToCurve.GetCurve()
 	F := E.Field()
 	for i := range v.Vectors {
 		got := hashToCurve.Hash([]byte(v.Vectors[i].Msg), []byte(v.DST))
@@ -78,7 +76,7 @@ func TestVectors(t *testing.T) {
 			if errJSON != nil {
 				return errJSON
 			}
-			t.Run(v.SuiteID, v.testVector)
+			t.Run(v.SuiteID, v.test)
 			return nil
 		}); errFolder != nil {
 		t.Fatalf("error on reading testdata folder: %v", errFolder)

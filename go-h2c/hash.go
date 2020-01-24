@@ -2,6 +2,10 @@ package h2c
 
 import (
 	"hash"
+	"io"
+	"math/big"
+
+	"golang.org/x/crypto/hkdf"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
@@ -10,52 +14,70 @@ import (
 
 // HashToPoint is
 type HashToPoint interface {
-	// IsRandomOracle returns true if the output distribution is indifferentiable from a random oracle.
+	// IsRandomOracle returns true if the output distribution is
+	// indifferentiable from a random oracle.
 	IsRandomOracle() bool
-	// Hash returns a point on an elliptic curve given an input string and a domin separation tag.
+	// Hash returns a point on an elliptic curve given as input a string and a
+	// domain separation tag.
 	Hash(in, dst []byte) C.Point
-	// GetParams returns the params of the suite
-	GetParams() *Params
+	// GetCurve returns the destination elliptic curve.
+	GetCurve() C.EllCurve
 }
 
-// Params is
-type Params struct {
-	E       C.EllCurve
-	L       uint
-	HFunc   func() hash.Hash
-	Mapping M.Map
+type encoding struct {
+	E            C.EllCurve
+	HFunc        func() hash.Hash
+	L            uint
+	Mapping      M.MapToCurve
+	RandomOracle bool
 }
 
-func (p *Params) GetParams() *Params { return p }
+// hashToField is a function that hashes a string msg of any length into an
+// element of a finite field.
+func (e *encoding) hashToField(
+	msg []byte, // msg is the message to hash.
+	dst []byte, // DST, a domain separation tag (see discussion above).
+	ctr byte, // ctr is 0, 1, or 2.
+) GF.Elt {
+	info := []byte{'H', '2', 'C', ctr, byte(1)}
+	msgPrime := hkdf.Extract(e.HFunc, append(msg, byte(0)), dst)
 
-// GetEncodeToCurve is a non-uniform encoding. This function encodes bit strings
-// to points on an elliptic curve group (G). The distribution of the output is
-// not uniformly random in G.
-func GetEncodeToCurve(p *Params) HashToPoint { return encodeToCurve{p} }
+	F := e.E.Field()
+	m := F.Ext()
+	v := make([]interface{}, m)
+	t := make([]byte, e.L)
 
-// GetHashToCurve is a random oracle encoding from bit strings to points on an
-// elliptic curve group (G). This function is suitable for applications
-// requiring a random oracle in G.
-func GetHashToCurve(p *Params) HashToPoint { return hashToCurve{p} }
+	for i := uint(1); i <= m; i++ {
+		info[4] = byte(i)
+		rd := hkdf.Expand(e.HFunc, msgPrime, info)
+		if _, err := io.ReadFull(rd, t); err != nil {
+			panic("error on hdkf")
+		}
+		vi := new(big.Int).SetBytes(t)
+		v[i-1] = vi.Mod(vi, F.P())
+	}
+	return F.Elt(v)
+}
 
-type encodeToCurve struct{ *Params }
+func (e *encoding) GetCurve() C.EllCurve { return e.E }
+func (e *encoding) IsRandomOracle() bool { return e.RandomOracle }
 
-func (s encodeToCurve) IsRandomOracle() bool { return false }
-func (s encodeToCurve) Hash(in, dst []byte) C.Point {
-	u := GF.HashToField(in, dst, byte(2), s.HFunc, s.E.Field(), s.L)
-	Q := s.Mapping.MapToCurve(u)
+type encodeToCurve struct{ *encoding }
+
+func (s *encodeToCurve) Hash(in, dst []byte) C.Point {
+	u := s.hashToField(in, dst, byte(2))
+	Q := s.Mapping.Map(u)
 	P := s.E.ClearCofactor(Q)
 	return P
 }
 
-type hashToCurve struct{ *Params }
+type hashToCurve struct{ *encoding }
 
-func (s hashToCurve) IsRandomOracle() bool { return true }
-func (s hashToCurve) Hash(in, dst []byte) C.Point {
-	u0 := GF.HashToField(in, dst, byte(0), s.HFunc, s.E.Field(), s.L)
-	u1 := GF.HashToField(in, dst, byte(1), s.HFunc, s.E.Field(), s.L)
-	Q0 := s.Mapping.MapToCurve(u0)
-	Q1 := s.Mapping.MapToCurve(u1)
+func (s *hashToCurve) Hash(in, dst []byte) C.Point {
+	u0 := s.hashToField(in, dst, byte(0))
+	u1 := s.hashToField(in, dst, byte(1))
+	Q0 := s.Mapping.Map(u0)
+	Q1 := s.Mapping.Map(u1)
 	R := s.E.Add(Q0, Q1)
 	P := s.E.ClearCofactor(R)
 	return P

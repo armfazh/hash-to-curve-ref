@@ -48,6 +48,10 @@ func (e *WECurve) IsValid() bool {
 	t0 = F.Neg(t0)            // -16(4A^3+27B^2)
 	return !F.IsZero(t0)      // -16(4A^3+27B^2) != 0
 }
+func (e *WECurve) IsEqual(ec EllCurve) bool {
+	e0 := ec.(*WECurve)
+	return e.F.IsEqual(e0.F) && e.F.AreEqual(e.A, e0.A) && e.F.AreEqual(e.B, e0.B)
+}
 func (e *WECurve) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
 		return isZero
@@ -161,7 +165,7 @@ func (p *ptWe) String() string { return p.afPoint.String() }
 func (p *ptWe) Copy() Point    { return &ptWe{p.WECurve, p.copy()} }
 func (p *ptWe) IsEqual(q Point) bool {
 	qq := q.(*ptWe)
-	return p.WECurve == qq.WECurve && p.isEqual(p.F, qq.afPoint)
+	return p.WECurve.IsEqual(qq.WECurve) && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptWe) IsIdentity() bool   { return false }
 func (p *ptWe) IsTwoTorsion() bool { return p.F.IsZero(p.y) }

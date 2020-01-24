@@ -28,6 +28,7 @@ type EllCurve interface {
 	Double(Point) Point
 	IsOnCurve(Point) bool
 	ClearCofactor(Point) Point
+	IsEqual(EllCurve) bool
 }
 
 // RationalMap is

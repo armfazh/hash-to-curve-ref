@@ -1,12 +1,24 @@
-package sswu
+package mapping
 
 import (
 	"fmt"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
+
+// NewSSWU is
+func NewSSWU(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.Isogeny) MapToCurve {
+	E := e.(C.W)
+	F := E.F
+	cond1 := F.IsZero(E.A)
+	cond2 := F.IsZero(E.B)
+	cond3 := iso != nil
+	if (cond1 || cond2) && cond3 {
+		return &sswuAB0{E, iso, newSSWU(iso.Domain(), z, sgn0)}
+	}
+	return newSSWU(e, z, sgn0)
+}
 
 type sswu struct {
 	E      C.W
@@ -17,8 +29,7 @@ type sswu struct {
 
 func (m sswu) String() string { return fmt.Sprintf("Simple SWU for E: %v", m.E) }
 
-// New is
-func New(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) M.Map {
+func newSSWU(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID) MapToCurve {
 	if s := (&sswu{E: e.(C.W), Z: z}); s.verify() {
 		s.precmp(sgn0)
 		return s
@@ -51,7 +62,7 @@ func (m *sswu) verify() bool {
 	return precond1 && precond2 && cond1 && cond2 && cond4
 }
 
-func (m *sswu) MapToCurve(u GF.Elt) C.Point {
+func (m *sswu) Map(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1, t2 GF.Elt
 	var x1, x2, gx1, gx2, y2, x, y GF.Elt
@@ -81,3 +92,13 @@ func (m *sswu) MapToCurve(u GF.Elt) C.Point {
 	y = F.CMov(F.Neg(y), y, e3) // 21.   y = CMOV(-y, y, e3)
 	return m.E.NewPoint(x, y)
 }
+
+type sswuAB0 struct {
+	E   C.W
+	iso C.Isogeny
+	MapToCurve
+}
+
+func (m sswuAB0) String() string { return fmt.Sprintf("Simple SWU AB==0 for E: %v", m.E) }
+
+func (m *sswuAB0) Map(u GF.Elt) C.Point { return m.iso.Push(m.MapToCurve.Map(u)) }

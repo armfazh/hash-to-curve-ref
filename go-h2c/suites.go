@@ -1,97 +1,128 @@
 package h2c
 
 import (
-	"crypto/sha256"
-	"crypto/sha512"
+	"crypto"
+	_ "crypto/sha256" // To link the sha256 module
+	_ "crypto/sha512" // To link the sha256 module
+	"fmt"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/elligator2"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswu"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/sswuAB0"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping/svdw"
+	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-// Suites is a list of supported hash to curve suites
-var Suites map[string]HashToPoint
+// SuiteID is the identifier of supported hash to curve suites.
+type SuiteID uint16
+
+const (
+	P256_SHA256_SSWU_NU_ SuiteID = iota
+	P256_SHA256_SSWU_RO_
+	P256_SHA256_SVDW_NU_
+	P256_SHA256_SVDW_RO_
+	P384_SHA512_SSWU_NU_
+	P384_SHA512_SSWU_RO_
+	P384_SHA512_SVDW_NU_
+	P384_SHA512_SVDW_RO_
+	P521_SHA512_SSWU_NU_
+	P521_SHA512_SSWU_RO_
+	P521_SHA512_SVDW_NU_
+	P521_SHA512_SVDW_RO_
+	Curve25519_SHA256_ELL2_NU_
+	Curve25519_SHA256_ELL2_RO_
+	Edwards25519_SHA256_EDELL2_NU_
+	Edwards25519_SHA256_EDELL2_RO_
+	Curve448_SHA512_ELL2_NU_
+	Curve448_SHA512_ELL2_RO_
+	Edwards448_SHA512_EDELL2_NU_
+	Edwards448_SHA512_EDELL2_RO_
+	SECP256k1_SHA256_SSWU_NU_
+	SECP256k1_SHA256_SSWU_RO_
+	SECP256k1_SHA256_SVDW_NU_
+	SECP256k1_SHA256_SVDW_RO_
+)
+
+// Get returns a HashToPoint based on the SuiteID, otherwise returns nil if the
+// SuiteID is not supported.
+func (id SuiteID) Get() (HashToPoint, error) {
+	if s, ok := supportedSuitesID[id]; ok {
+		return s.New(), nil
+	}
+	return nil, fmt.Errorf("Suite: %v not supported", id)
+}
+func (id SuiteID) register(name string, s *params) {
+	s.ID = id
+	supportedSuitesNames[name] = id
+	supportedSuitesID[id] = *s
+}
+
+// GetFromName is
+func GetFromName(name string) (HashToPoint, error) {
+	if s, ok := supportedSuitesNames[name]; ok {
+		return s.Get()
+	}
+	return nil, fmt.Errorf("Suite: %v not supported", name)
+}
+
+var supportedSuitesNames map[string]SuiteID
+var supportedSuitesID map[SuiteID]params
 
 func init() {
-	Suites = make(map[string]HashToPoint)
-	suitesWCurves()
-	suitesMCurves()
-	suiteSECP2556K1()
+	supportedSuitesNames = make(map[string]SuiteID)
+	supportedSuitesID = make(map[SuiteID]params)
+
+	P256_SHA256_SSWU_NU_.register("P256-SHA256-SSWU-NU-", &params{Ell: C.P256, H: crypto.SHA256, Map: M.SSWU, Sgn0: GF.SignLE, L: 48, RO: false, Z: -10})
+	P256_SHA256_SSWU_RO_.register("P256-SHA256-SSWU-RO-", &params{Ell: C.P256, H: crypto.SHA256, Map: M.SSWU, Sgn0: GF.SignLE, L: 48, RO: true, Z: -10})
+	P256_SHA256_SVDW_NU_.register("P256-SHA256-SVDW-NU-", &params{Ell: C.P256, H: crypto.SHA256, Map: M.SVDW, Sgn0: GF.SignLE, L: 48, RO: false})
+	P256_SHA256_SVDW_RO_.register("P256-SHA256-SVDW-RO-", &params{Ell: C.P256, H: crypto.SHA256, Map: M.SVDW, Sgn0: GF.SignLE, L: 48, RO: true})
+
+	P384_SHA512_SSWU_NU_.register("P384-SHA512-SSWU-NU-", &params{Ell: C.P384, H: crypto.SHA512, Map: M.SSWU, Sgn0: GF.SignLE, L: 72, RO: false, Z: -12})
+	P384_SHA512_SSWU_RO_.register("P384-SHA512-SSWU-RO-", &params{Ell: C.P384, H: crypto.SHA512, Map: M.SSWU, Sgn0: GF.SignLE, L: 72, RO: true, Z: -12})
+	P384_SHA512_SVDW_NU_.register("P384-SHA512-SVDW-NU-", &params{Ell: C.P384, H: crypto.SHA512, Map: M.SVDW, Sgn0: GF.SignLE, L: 72, RO: false})
+	P384_SHA512_SVDW_RO_.register("P384-SHA512-SVDW-RO-", &params{Ell: C.P384, H: crypto.SHA512, Map: M.SVDW, Sgn0: GF.SignLE, L: 72, RO: true})
+
+	P521_SHA512_SSWU_NU_.register("P521-SHA512-SSWU-NU-", &params{Ell: C.P521, H: crypto.SHA512, Map: M.SSWU, Sgn0: GF.SignLE, L: 96, RO: false, Z: -4})
+	P521_SHA512_SSWU_RO_.register("P521-SHA512-SSWU-RO-", &params{Ell: C.P521, H: crypto.SHA512, Map: M.SSWU, Sgn0: GF.SignLE, L: 96, RO: true, Z: -4})
+	P521_SHA512_SVDW_NU_.register("P521-SHA512-SVDW-NU-", &params{Ell: C.P521, H: crypto.SHA512, Map: M.SVDW, Sgn0: GF.SignLE, L: 96, RO: false})
+	P521_SHA512_SVDW_RO_.register("P521-SHA512-SVDW-RO-", &params{Ell: C.P521, H: crypto.SHA512, Map: M.SVDW, Sgn0: GF.SignLE, L: 96, RO: true})
+
+	Curve25519_SHA256_ELL2_NU_.register("curve25519-SHA256-ELL2-NU-", &params{Ell: C.Curve25519, H: crypto.SHA256, Map: M.ELL2, Sgn0: GF.SignLE, L: 48, RO: false})
+	Curve25519_SHA256_ELL2_RO_.register("curve25519-SHA256-ELL2-RO-", &params{Ell: C.Curve25519, H: crypto.SHA256, Map: M.ELL2, Sgn0: GF.SignLE, L: 48, RO: true})
+	Edwards25519_SHA256_EDELL2_NU_.register("edwards25519-SHA256-EDELL2-NU-", &params{Ell: C.Edwards25519, H: crypto.SHA256, Map: M.EDELL2, Sgn0: GF.SignLE, L: 48, RO: false})
+	Edwards25519_SHA256_EDELL2_RO_.register("edwards25519-SHA256-EDELL2-RO-", &params{Ell: C.Edwards25519, H: crypto.SHA256, Map: M.EDELL2, Sgn0: GF.SignLE, L: 48, RO: true})
+
+	Curve448_SHA512_ELL2_NU_.register("curve448-SHA512-ELL2-NU-", &params{Ell: C.Curve448, H: crypto.SHA512, Map: M.ELL2, Sgn0: GF.SignLE, L: 84, RO: false})
+	Curve448_SHA512_ELL2_RO_.register("curve448-SHA512-ELL2-RO-", &params{Ell: C.Curve448, H: crypto.SHA512, Map: M.ELL2, Sgn0: GF.SignLE, L: 84, RO: true})
+	Edwards448_SHA512_EDELL2_NU_.register("edwards448-SHA512-EDELL2-NU-", &params{Ell: C.Edwards448, H: crypto.SHA512, Map: M.EDELL2, Sgn0: GF.SignLE, L: 84, RO: false})
+	Edwards448_SHA512_EDELL2_RO_.register("edwards448-SHA512-EDELL2-RO-", &params{Ell: C.Edwards448, H: crypto.SHA512, Map: M.EDELL2, Sgn0: GF.SignLE, L: 84, RO: true})
+
+	SECP256k1_SHA256_SSWU_NU_.register("secp256k1-SHA256-SSWU-NU-", &params{Ell: C.SECP256K1, H: crypto.SHA256, Map: M.SSWU, Sgn0: GF.SignLE, L: 48, RO: false, Z: -11, Iso: C.GetSECP256K1Isogeny()})
+	SECP256k1_SHA256_SSWU_RO_.register("secp256k1-SHA256-SSWU-RO-", &params{Ell: C.SECP256K1, H: crypto.SHA256, Map: M.SSWU, Sgn0: GF.SignLE, L: 48, RO: true, Z: -11, Iso: C.GetSECP256K1Isogeny()})
+	SECP256k1_SHA256_SVDW_NU_.register("secp256k1-SHA256-SVDW-NU-", &params{Ell: C.SECP256K1, H: crypto.SHA256, Map: M.SVDW, Sgn0: GF.SignLE, L: 48, RO: false})
+	SECP256k1_SHA256_SVDW_RO_.register("secp256k1-SHA256-SVDW-RO-", &params{Ell: C.SECP256K1, H: crypto.SHA256, Map: M.SVDW, Sgn0: GF.SignLE, L: 48, RO: true})
 }
 
-func suitesWCurves() {
-	E := C.P256.Get()
-	F := E.Field()
-	h := sha256.New
-	L := uint(48)
-	Z := F.Elt(-10)
-	sgn0 := GF.SignLE
-	Suites["P256-SHA256-SSWU-NU-"] = GetEncodeToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P256-SHA256-SSWU-RO-"] = GetHashToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P256-SHA256-SVDW-NU-"] = GetEncodeToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
-	Suites["P256-SHA256-SVDW-RO-"] = GetHashToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
-
-	E = C.P384.Get()
-	F = E.Field()
-	h = sha512.New
-	L = uint(72)
-	Z = F.Elt(-12)
-	sgn0 = GF.SignLE
-	Suites["P384-SHA512-SSWU-NU-"] = GetEncodeToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P384-SHA512-SSWU-RO-"] = GetHashToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P384-SHA512-SVDW-NU-"] = GetEncodeToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
-	Suites["P384-SHA512-SVDW-RO-"] = GetHashToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
-
-	E = C.P521.Get()
-	F = E.Field()
-	h = sha512.New
-	L = uint(96)
-	Z = F.Elt(-4)
-	sgn0 = GF.SignLE
-	Suites["P521-SHA512-SSWU-NU-"] = GetEncodeToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P521-SHA512-SSWU-RO-"] = GetHashToCurve(&Params{E, L, h, sswu.New(E, Z, sgn0)})
-	Suites["P521-SHA512-SVDW-NU-"] = GetEncodeToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
-	Suites["P521-SHA512-SVDW-RO-"] = GetHashToCurve(&Params{E, L, h, svdw.New(E, sgn0)})
+type params struct {
+	ID   SuiteID
+	Ell  C.CurveID
+	H    crypto.Hash
+	Map  M.ID
+	Sgn0 GF.Sgn0ID
+	L    uint
+	Z    int
+	Iso  C.Isogeny
+	RO   bool
 }
 
-func suitesMCurves() {
-	E := C.Curve25519.Get()
-	h := sha256.New
-	L := uint(48)
-	sgn0 := GF.SignLE
-	Suites["curve25519-SHA256-ELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	Suites["curve25519-SHA256-ELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-
-	E = C.Edwards25519.Get()
-	Suites["edwards25519-SHA256-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	Suites["edwards25519-SHA256-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-
-	E = C.Curve448.Get()
-	h = sha512.New
-	L = uint(84)
-	sgn0 = GF.SignLE
-	Suites["curve448-SHA512-ELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	Suites["curve448-SHA512-ELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-
-	E = C.Edwards448.Get()
-	Suites["edwards448-SHA512-EDELL2-NU-"] = GetEncodeToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-	Suites["edwards448-SHA512-EDELL2-RO-"] = GetHashToCurve(&Params{E, L, h, elligator2.New(E, sgn0)})
-}
-
-func suiteSECP2556K1() {
-	iso := C.GetSECP256K1Isogeny()
-	E0 := iso.Domain()
-	E1 := iso.Codomain()
-	h := sha256.New
-	F := E0.Field()
-	Z := F.Elt(-11)
-	L := uint(48)
-	sgn0 := GF.SignLE
-	Suites["secp256k1-SHA256-SSWU-NU-"] = GetEncodeToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
-	Suites["secp256k1-SHA256-SSWU-RO-"] = GetHashToCurve(&Params{E1, L, h, sswuAB0.New(E0, Z, sgn0, iso)})
-	Suites["secp256k1-SHA256-SVDW-NU-"] = GetEncodeToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
-	Suites["secp256k1-SHA256-SVDW-RO-"] = GetHashToCurve(&Params{E1, L, h, svdw.New(E1, sgn0)})
+// New returns a HashToPoint that encodes bit strings to points on an elliptic
+// curve group.
+func (s *params) New() HashToPoint {
+	E := s.Ell.Get()
+	H := s.H.New
+	Z := E.Field().Elt(s.Z)
+	m := s.Map.Get(E, Z, s.Sgn0, s.Iso)
+	e := &encoding{E, H, s.L, m, s.RO}
+	if s.RO {
+		return &hashToCurve{e}
+	}
+	return &encodeToCurve{e}
 }

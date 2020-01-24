@@ -1,24 +1,23 @@
-package elligator2
+package mapping
 
 import (
 	"fmt"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type teEll2 struct {
 	E C.T
 	C.RationalMap
-	M.Map
+	MapToCurve
 }
 
 func (m teEll2) String() string { return fmt.Sprintf("Edwards Elligator2 for E: %v", m.E) }
 
-func newTEEll2(e C.T, sgn0 GF.Sgn0ID) M.Map {
+func newTEEll2(e C.T, sgn0 GF.Sgn0ID) MapToCurve {
 	var rat C.RationalMap
-	var ell2Map M.Map
+	var ell2Map MapToCurve
 	switch e.Id {
 	case C.Edwards25519:
 		rat = C.FromTe2Mt25519()
@@ -33,4 +32,4 @@ func newTEEll2(e C.T, sgn0 GF.Sgn0ID) M.Map {
 	return &teEll2{e, rat, ell2Map}
 }
 
-func (m *teEll2) MapToCurve(u GF.Elt) C.Point { return m.Pull(m.Map.MapToCurve(u)) }
+func (m *teEll2) Map(u GF.Elt) C.Point { return m.Pull(m.MapToCurve.Map(u)) }

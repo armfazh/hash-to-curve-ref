@@ -54,6 +54,7 @@ func (f fp2) One() Elt        { return f.Elt(1) }
 func (f fp2) BitLen() int     { return f.p.BitLen() }
 
 func (f fp2) AreEqual(x, y Elt) bool { return f.IsZero(f.Sub(x, y)) }
+func (f fp2) IsEqual(ff Field) bool  { return f.p.Cmp(ff.(fp2).p) == 0 }
 func (f fp2) IsZero(x Elt) bool {
 	e := x.(*fp2Elt)
 	return e.a.Mod(e.a, f.p).Sign() == 0 &&

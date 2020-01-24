@@ -1,4 +1,4 @@
-package elligator2
+package mapping
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type wA0ell2 struct {
@@ -16,7 +15,7 @@ type wA0ell2 struct {
 
 func (m wA0ell2) String() string { return fmt.Sprintf("Elligator2A0 for E: %v", m.E) }
 
-func newWA0Ell2(e C.W, sgn0 GF.Sgn0ID) M.Map {
+func newWA0Ell2(e C.W, sgn0 GF.Sgn0ID) MapToCurve {
 	F := e.F
 	q := F.Order()
 	precond1 := q.Mod(q, big.NewInt(4)).Int64() == int64(3) // q == 3 (mod 4)
@@ -29,7 +28,7 @@ func newWA0Ell2(e C.W, sgn0 GF.Sgn0ID) M.Map {
 	panic("Curve didn't match elligator2 mapping")
 }
 
-func (m *wA0ell2) MapToCurve(u GF.Elt) C.Point {
+func (m *wA0ell2) Map(u GF.Elt) C.Point {
 	F := m.E.F
 	var x1, x2, gx1, x, y GF.Elt
 	var e1, e2 bool

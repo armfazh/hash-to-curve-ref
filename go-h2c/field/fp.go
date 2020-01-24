@@ -83,6 +83,7 @@ func (f fp) mod(x *big.Int) Elt { return &fpElt{x.Mod(x, f.p)} }
 func (f fp) IsZero(x Elt) bool      { return x.(*fpElt).n.Sign() == 0 }
 func (f fp) AreEqual(x, y Elt) bool { return f.IsZero(f.Sub(x, y)) }
 func (f fp) IsSquare(x Elt) bool    { return f.AreEqual(f.Exp(x, f.cte.pMinus1div2), f.One()) }
+func (f fp) IsEqual(ff Field) bool  { return f.p.Cmp(ff.(fp).p) == 0 }
 
 // Implementing hasArith
 

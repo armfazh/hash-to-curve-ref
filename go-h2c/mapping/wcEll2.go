@@ -1,11 +1,10 @@
-package elligator2
+package mapping
 
 import (
 	"fmt"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
-	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
 type wcEll2 struct {
@@ -16,7 +15,7 @@ type wcEll2 struct {
 
 func (m wcEll2) String() string { return fmt.Sprintf("Elligator2 for E: %v", m.E) }
 
-func newWCEll2(e C.WC, sgn0 GF.Sgn0ID) M.Map {
+func newWCEll2(e C.WC, sgn0 GF.Sgn0ID) MapToCurve {
 	F := e.F
 	if !F.IsZero(e.A) && !F.IsZero(e.B) { // A != 0 and  B != 0
 		return &wcEll2{e, findZ(F), F.GetSgn0(sgn0)}
@@ -36,7 +35,7 @@ func findZ(f GF.Field) GF.Elt {
 	}
 }
 
-func (m *wcEll2) MapToCurve(u GF.Elt) C.Point {
+func (m *wcEll2) Map(u GF.Elt) C.Point {
 	F := m.E.F
 	var t1 GF.Elt
 	var x1, x2, gx1, gx2, y2, x, y GF.Elt

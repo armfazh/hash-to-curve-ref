@@ -34,6 +34,7 @@ type hasPredicates interface {
 	AreEqual(Elt, Elt) bool
 	IsZero(Elt) bool
 	IsSquare(Elt) bool
+	IsEqual(Field) bool
 }
 
 type hasArith interface {

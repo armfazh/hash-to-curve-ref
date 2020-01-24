@@ -38,6 +38,10 @@ func (e *MTCurve) IsValid() bool {
 	t0 = F.Mul(t0, e.B)      // B(A^2-4)
 	return !F.IsZero(t0)     // B(A^2-4) != 0
 }
+func (e *MTCurve) IsEqual(ec EllCurve) bool {
+	e0 := ec.(*MTCurve)
+	return e.F.IsEqual(e0.F) && e.F.AreEqual(e.A, e0.A) && e.F.AreEqual(e.B, e0.B)
+}
 func (e *MTCurve) IsOnCurve(p Point) bool {
 	if _, isZero := p.(*infPoint); isZero {
 		return isZero
@@ -157,7 +161,7 @@ func (p *ptMt) String() string { return p.afPoint.String() }
 func (p *ptMt) Copy() Point    { return &ptMt{p.MTCurve, p.copy()} }
 func (p *ptMt) IsEqual(q Point) bool {
 	qq := q.(*ptMt)
-	return p.MTCurve == qq.MTCurve && p.isEqual(p.F, qq.afPoint)
+	return p.MTCurve.IsEqual(qq.MTCurve) && p.isEqual(p.F, qq.afPoint)
 }
 func (p *ptMt) IsIdentity() bool   { return false }
 func (p *ptMt) IsTwoTorsion() bool { return p.F.IsZero(p.y) }
