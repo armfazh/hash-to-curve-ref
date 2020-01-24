@@ -24,9 +24,9 @@ type fp struct {
 	hasSqrt
 }
 
-// NewFp is
+// NewFp creates a prime field as Z/pZ given p as an int, uint, *big.Int or string.
 func NewFp(id ID, p interface{}) Field {
-	prime := fromType(p)
+	prime := FromType(p)
 	if !prime.ProbablyPrime(4) {
 		panic(fmt.Errorf("Modulus is not prime p:%v", prime))
 	}
@@ -70,9 +70,9 @@ func (f fp) BitLen() int          { return f.p.BitLen() }
 func (f fp) Elt(in interface{}) Elt {
 	var n *big.Int
 	if v, ok := in.([]interface{}); ok && len(v) == 1 {
-		n = fromType(v[0])
+		n = FromType(v[0])
 	} else {
-		n = fromType(in)
+		n = FromType(in)
 	}
 	return f.mod(n)
 }

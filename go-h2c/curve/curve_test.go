@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/internal/toy"
 )
 
 func TestCurves(t *testing.T) {

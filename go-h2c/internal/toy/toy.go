@@ -1,3 +1,4 @@
+// Package toy provides small instances of elliptic curves.
 package toy
 
 import (

@@ -7,7 +7,9 @@ import (
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-// NewSSWU is
+// NewSSWU implements the Simplified SWU method. If a non-nil isogeny (e0 -> e)
+// is provided, it first maps points to e0 and then applies the isogeny to get
+// a point on e.
 func NewSSWU(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.Isogeny) MapToCurve {
 	E := e.(C.W)
 	F := E.F

@@ -1,3 +1,5 @@
+// Package curve provides definitions of several models of elliptic curves
+// defined over finite fields of large prime characteristic.
 package curve
 
 import (
@@ -6,32 +8,34 @@ import (
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-// Point is an elliptic curve point
+// Point represents an elliptic curve point.
 type Point interface {
+	Copy() Point
 	IsIdentity() bool
 	IsEqual(Point) bool
 	IsTwoTorsion() bool
-	Copy() Point
 	X() GF.Elt
 	Y() GF.Elt
 }
 
-// EllCurve is an elliptic curve
+// EllCurve represents an elliptic curve group.
 type EllCurve interface {
 	Field() GF.Field
 	Order() *big.Int
 	Cofactor() *big.Int
 	NewPoint(x, y GF.Elt) Point
+	// Predicates
+	IsOnCurve(Point) bool
+	IsEqual(EllCurve) bool
+	// Arithmetic operations
 	Identity() Point
 	Neg(Point) Point
 	Add(Point, Point) Point
 	Double(Point) Point
-	IsOnCurve(Point) bool
 	ClearCofactor(Point) Point
-	IsEqual(EllCurve) bool
 }
 
-// RationalMap is
+// RationalMap represents a birational map between two elliptic curves.
 type RationalMap interface {
 	Domain() EllCurve
 	Codomain() EllCurve
@@ -39,7 +43,7 @@ type RationalMap interface {
 	Pull(Point) Point
 }
 
-// Isogeny is
+// Isogeny represents an isogeny between two elliptic curves.
 type Isogeny interface {
 	Domain() EllCurve
 	Codomain() EllCurve

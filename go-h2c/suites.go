@@ -41,8 +41,8 @@ const (
 	SECP256k1_SHA256_SVDW_RO_
 )
 
-// Get returns a HashToPoint based on the SuiteID, otherwise returns nil if the
-// SuiteID is not supported.
+// Get returns a HashToPoint based on the SuiteID, otherwise returns an error
+// if the SuiteID is not supported or invalid.
 func (id SuiteID) Get() (HashToPoint, error) {
 	if s, ok := supportedSuitesID[id]; ok {
 		return s.New(), nil
@@ -55,8 +55,8 @@ func (id SuiteID) register(name string, s *params) {
 	supportedSuitesID[id] = *s
 }
 
-// GetFromName is
-func GetFromName(name string) (HashToPoint, error) {
+// GetSuite returns a HashToPoint function from a named suite.
+func GetSuite(name string) (HashToPoint, error) {
 	if s, ok := supportedSuitesNames[name]; ok {
 		return s.Get()
 	}

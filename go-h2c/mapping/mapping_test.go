@@ -5,8 +5,8 @@ import (
 
 	C "github.com/armfazh/hash-to-curve-ref/go-h2c/curve"
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
+	"github.com/armfazh/hash-to-curve-ref/go-h2c/internal/toy"
 	"github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
-	"github.com/armfazh/hash-to-curve-ref/go-h2c/toy"
 )
 
 func TestBF(t *testing.T) {

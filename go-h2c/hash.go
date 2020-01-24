@@ -12,7 +12,7 @@ import (
 	M "github.com/armfazh/hash-to-curve-ref/go-h2c/mapping"
 )
 
-// HashToPoint is
+// HashToPoint represents a complete and secure function for hashing strings to points.
 type HashToPoint interface {
 	// IsRandomOracle returns true if the output distribution is
 	// indifferentiable from a random oracle.

@@ -17,7 +17,7 @@ type bf struct {
 
 func (m bf) String() string { return fmt.Sprintf("Boneh-Franklin for E: %v", m.E) }
 
-// NewBF is
+// NewBF implements the Boneh-Franklin method.
 func NewBF(e C.EllCurve) MapToCurve {
 	if s := (&bf{E: e.(C.W)}); s.verify() {
 		s.precmp()

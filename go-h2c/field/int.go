@@ -5,16 +5,8 @@ import (
 	"math/big"
 )
 
-// BigFromString is
-func BigFromString(s string) *big.Int {
-	p := new(big.Int)
-	if _, ok := p.SetString(s, 0); !ok {
-		panic("error setting the number")
-	}
-	return p
-}
-
-func fromType(in interface{}) *big.Int {
+// FromType converts an int, uint or string to a big.Int.
+func FromType(in interface{}) *big.Int {
 	n := new(big.Int)
 	switch s := in.(type) {
 	case *big.Int:
@@ -22,7 +14,9 @@ func fromType(in interface{}) *big.Int {
 	case big.Int:
 		n.Set(&s)
 	case string:
-		n = BigFromString(s)
+		if _, ok := n.SetString(s, 0); !ok {
+			panic("error setting the number")
+		}
 	case uint:
 		n.SetUint64(uint64(s))
 	case uint8:

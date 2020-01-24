@@ -25,9 +25,9 @@ type fp2 struct {
 	}
 }
 
-// NewFp2 is
+// NewFp2 creates a quadratic extension field Z/pZ[x] with irreducible polynomial x^2=-1 and given p as an int, uint, *big.Int or string.
 func NewFp2(name string, p interface{}) Field {
-	prime := fromType(p)
+	prime := FromType(p)
 	if !prime.ProbablyPrime(4) {
 		panic("p is not prime")
 	}
@@ -37,10 +37,10 @@ func NewFp2(name string, p interface{}) Field {
 func (f fp2) Elt(in interface{}) Elt {
 	var a, b *big.Int
 	if v, ok := in.([]interface{}); ok && len(v) == 2 {
-		a = fromType(v[0])
-		b = fromType(v[1])
+		a = FromType(v[0])
+		b = FromType(v[1])
 	} else {
-		a = fromType(in)
+		a = FromType(in)
 		b = big.NewInt(0)
 	}
 	return f.mod(a, b)

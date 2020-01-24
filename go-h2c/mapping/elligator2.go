@@ -7,7 +7,7 @@ import (
 	GF "github.com/armfazh/hash-to-curve-ref/go-h2c/field"
 )
 
-// NewElligator2 is
+// NewElligator2 implements the Elligator2 method.
 func NewElligator2(e C.EllCurve, sgn0 GF.Sgn0ID) MapToCurve {
 	switch curve := e.(type) {
 	case C.W:

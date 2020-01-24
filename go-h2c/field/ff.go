@@ -1,3 +1,4 @@
+// Package field provides implementations of finite fields of large-prime characteristic.
 package field
 
 import (
@@ -5,59 +6,51 @@ import (
 	"math/big"
 )
 
-// Elt is a field element
+// Elt represents a finite field element.
 type Elt interface {
-	Copy() Elt
+	Copy() Elt // Makes a copy of the element.
 }
 
-// Field is
+// Field describes the operations required to implement a finite field.
 type Field interface {
-	Zero() Elt            // Constructor of elements
-	One() Elt             // Returns the one element
-	Elt(interface{}) Elt  // Constructor of elements from a value
-	Rand(r io.Reader) Elt // Constructor of elements at random
-	P() *big.Int          // Characteristic of the field
-	Order() *big.Int      // Size of the field
-	Ext() uint            // Extension degree of field
-	BitLen() int          // Bit length of modulus
-	hasArith
-	hasPredicates
-	hasCMov
-	hasSgn0
-	hasInv0
+	// Constructing elements
+	Zero() Elt            // Returns the Zero element.
+	One() Elt             // Returns the One element.
+	Elt(interface{}) Elt  // Constructor of elements from an int, uint, or string.
+	Rand(r io.Reader) Elt // Returns an elements chosen at random.
+	Generator() Elt       // Returns an additive generator.
+	// Properties
+	P() *big.Int     // Characteristic of the field.
+	Order() *big.Int // Size of the field.
+	Ext() uint       // Extension degree of field.
+	BitLen() int     // Bit length of modulus.
+	// Predicates
+	AreEqual(Elt, Elt) bool // Returns true if both elements are equivalent.
+	IsZero(Elt) bool        // Returns true if the element is equivalent to zero.
+	IsSquare(Elt) bool      // Returns true if the element is a quadratic residue.
+	IsEqual(Field) bool     // Returns true if the input field is equal to the receiver.
+	// Arithmetic operations
+	Neg(x Elt) Elt             // Returns -x.
+	Add(x, y Elt) Elt          // Returns x+y.
+	Sub(x, y Elt) Elt          // Returns x-y.
+	Mul(x, y Elt) Elt          // Returns x*y.
+	Sqr(x Elt) Elt             // Returns x^2.
+	Inv(x Elt) Elt             // Returns 1/x.
+	Exp(x Elt, n *big.Int) Elt // Returns x^n.
+	Inv0(Elt) Elt              // Returns 1/x, and 0 if x=0.
+	CMov(x, y Elt, b bool) Elt // Returns x if b=false, otherwise, returns y.
+	GetSgn0(Sgn0ID) func(Elt) int
 	hasSqrt
-	hasExp
-	hasAdvanced
 }
 
-type hasPredicates interface {
-	AreEqual(Elt, Elt) bool
-	IsZero(Elt) bool
-	IsSquare(Elt) bool
-	IsEqual(Field) bool
-}
-
-type hasArith interface {
-	Neg(x Elt) Elt
-	Add(x, y Elt) Elt
-	Sub(x, y Elt) Elt
-	Mul(x, y Elt) Elt
-	Sqr(x Elt) Elt
-	Inv(x Elt) Elt
-}
-
-type hasExp interface{ Exp(Elt, *big.Int) Elt }
-type hasCMov interface{ CMov(x, y Elt, b bool) Elt }
-type hasInv0 interface{ Inv0(Elt) Elt }
 type hasSqrt interface{ Sqrt(Elt) Elt }
-type hasSgn0 interface{ GetSgn0(Sgn0ID) func(Elt) int }
-type hasAdvanced interface{ Generator() Elt }
 
+// Sgn0ID is an identifier of a sign function.
 type Sgn0ID int
 
 const (
-	// SignLE is
+	// SignLE denotes little-endian sign function.
 	SignLE Sgn0ID = iota
-	// SignBE is
+	// SignBE denotes big-endian sign function.
 	SignBE
 )
