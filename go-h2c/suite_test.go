@@ -34,7 +34,7 @@ type vectorSuite struct {
 }
 
 func (v vectorSuite) test(t *testing.T) {
-	hashToCurve, err := h2c.GetSuite(v.SuiteID)
+	hashToCurve, err := h2c.SuiteID(v.SuiteID).Get()
 	if err != nil {
 		t.Skipf(err.Error())
 	}
@@ -80,5 +80,23 @@ func TestVectors(t *testing.T) {
 			return nil
 		}); errFolder != nil {
 		t.Fatalf("error on reading testdata folder: %v", errFolder)
+	}
+}
+
+func BenchmarkSuites(b *testing.B) {
+	msg := make([]byte, 256)
+	dst := make([]byte, 10)
+	for _, suite := range []h2c.SuiteID{
+		h2c.P256_SHA256_SSWU_NU_,
+		h2c.P256_SHA256_SSWU_RO_,
+		h2c.P256_SHA256_SVDW_NU_,
+		h2c.P256_SHA256_SVDW_RO_,
+	} {
+		b.Run(string(suite), func(b *testing.B) {
+			hashToCurve, _ := suite.Get()
+			for i := 0; i < b.N; i++ {
+				hashToCurve.Hash(msg, dst)
+			}
+		})
 	}
 }

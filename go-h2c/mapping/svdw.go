@@ -79,7 +79,7 @@ func (m *svdw) precmp() {
 	t1 = F.Mul(t0, m.c1)     // g(Z)*(3Z^2+4A)
 	t1 = F.Neg(t1)           // -g(Z)/(3Z^2+4A)
 	m.c3 = F.Sqrt(t1)        // sqrt(-g(Z)/(3Z^2+4A))
-	if m.Sgn0(m.c3) == -1 {  // sgn0(c3) MUST equal 1
+	if m.Sgn0(m.c3) == -1 {  // sgn0(c3) MUST be equal 1
 		m.c3 = F.Neg(m.c3)
 	}
 	t0 = F.Inv(t0)       // 1/(3Z^2+4A)

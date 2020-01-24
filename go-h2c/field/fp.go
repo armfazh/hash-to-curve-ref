@@ -109,7 +109,7 @@ func (f fp) GetSgn0(id Sgn0ID) func(Elt) int {
 	}
 	panic("Wrong signID")
 }
-func (f fp) Sgn0BE(x Elt) int { return 2*(f.cte.pMinus1div2.Cmp(x.(*fpElt).n)&^1) - 1 }
+func (f fp) Sgn0BE(x Elt) int { return 1 - 2*((f.cte.pMinus1div2.Cmp(x.(*fpElt).n)>>1)&1) }
 func (f fp) Sgn0LE(x Elt) int { return 1 - 2*int(x.(*fpElt).n.Bit(0)) }
 func (f fp) CMov(x, y Elt, b bool) Elt {
 	var z big.Int

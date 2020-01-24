@@ -19,6 +19,9 @@ const (
 	Edwards448
 	SECP256K1
 	SECP256K1_3ISO
+	BLS12381G1
+	BLS12381G1_11ISO
+	BLS12381G2
 )
 
 // GetFromID is
@@ -87,6 +90,20 @@ func (id CurveID) Get() EllCurve {
 			f.Elt("-39081"),
 			GF.FromType("0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffff7cca23e9c44edb49aed63690216cc2728dc58f552378c292ab5844f3"),
 			big.NewInt(4))
+	case BLS12381G1:
+		f := GF.BLS12381.Get()
+		return NewWeierstrass(id, f,
+			f.Zero(),
+			f.Elt(4),
+			GF.FromType("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001"),
+			GF.FromType("0xd201000000010001"))
+	case BLS12381G1_11ISO:
+		f := GF.BLS12381.Get()
+		return NewWeierstrass(id, f,
+			f.Elt("0x144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aefd881ac98936f8da0e0f97f5cf428082d584c1d"),
+			f.Elt("0x12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14fcef35ef55a23215a316ceaa5d1cc48e98e172be0"),
+			GF.FromType("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001"),
+			GF.FromType("0xd201000000010001"))
 	default:
 		panic("curve not supported")
 	}

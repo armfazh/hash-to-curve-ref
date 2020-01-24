@@ -42,7 +42,7 @@ const (
 
 // Get returns a MapToCurve implementation based on ID provided. Some arguments
 // can be set to nil if there are not required by the mapping.
-func (id ID) Get(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso C.Isogeny) MapToCurve {
+func (id ID) Get(e C.EllCurve, z GF.Elt, sgn0 GF.Sgn0ID, iso func() C.Isogeny) MapToCurve {
 	switch id {
 	case BF:
 		return NewBF(e)
