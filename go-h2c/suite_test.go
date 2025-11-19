@@ -36,7 +36,7 @@ type vectorSuite struct {
 func (v vectorSuite) test(t *testing.T) {
 	hashToCurve, err := h2c.SuiteID(v.SuiteID).Get()
 	if err != nil {
-		t.Skipf(err.Error())
+		t.Skipf("skipped due to %v", err.Error())
 	}
 	E := hashToCurve.GetCurve()
 	F := E.Field()
